@@ -1,0 +1,28 @@
+{
+  "name": "marketpulse-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "bootstrap": "npm ci",
+    "check:next": "node -e \"try{require('next/package.json');console.log('next dependency found')}catch(e){console.error('Missing dependencies. Run: npm ci');process.exit(1)}\"",
+    "dev": "next dev",
+    "build": "npm run check:next && next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "14.2.15",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "lightweight-charts": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.16",
+    "typescript": "^5.6.3"
+  }
+}
