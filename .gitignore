@@ -1,0 +1,19 @@
+# Frontend
+marketpulse-frontend/node_modules/
+marketpulse-frontend/.next/
+marketpulse-frontend/out/
+marketpulse-frontend/build/
+
+# Backend
+marketpulse-backend/venv/
+marketpulse-backend/__pycache__/
+marketpulse-backend/*.pyc
+
+# Env files
+.env
+.env.local
+marketpulse-frontend/.env
+marketpulse-backend/.env
+
+# Logs
+*.log
