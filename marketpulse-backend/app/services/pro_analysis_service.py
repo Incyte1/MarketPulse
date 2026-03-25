@@ -78,6 +78,10 @@ def _confirmation_lines(
             lines.append("Price is holding above the 20-day average")
         if technical_context.price_vs_50d == "above":
             lines.append("Price is holding above the 50-day average")
+        if technical_context.price_vs_200d == "above":
+            lines.append("Price is holding above the 200-day trend line")
+        if technical_context.macd >= technical_context.macd_signal:
+            lines.append("MACD remains in bullish alignment")
         if technical_context.momentum_state in {"positive", "bullish"}:
             lines.append("Momentum is supportive rather than fading")
 
@@ -86,6 +90,10 @@ def _confirmation_lines(
             lines.append("Price is below the 20-day average")
         if technical_context.price_vs_50d == "below":
             lines.append("Price is below the 50-day average")
+        if technical_context.price_vs_200d == "below":
+            lines.append("Price is below the 200-day trend line")
+        if technical_context.macd < technical_context.macd_signal:
+            lines.append("MACD still favors downside momentum")
         if technical_context.momentum_state in {"negative", "bearish"}:
             lines.append("Momentum still favors sellers")
 
@@ -106,6 +114,8 @@ def _invalidation_lines(
         lines.append("A failed breakout or fast move back below near-term support would weaken the bullish read")
         if technical_context.price_vs_20d == "below":
             lines.append("Failure to reclaim the 20-day average would reduce confidence")
+        if technical_context.stoch_rsi_k and technical_context.stoch_rsi_k >= 85:
+            lines.append("An overbought StochRSI state increases pullback risk")
 
     elif bias.label.upper() == "BEARISH":
         lines.append("A strong reclaim of resistance would weaken the bearish read")
@@ -113,6 +123,8 @@ def _invalidation_lines(
             lines.append("Sustained recovery back above the 20-day average would reduce downside confidence")
         if technical_context.price_vs_50d == "below":
             lines.append("Recovery above the 50-day average would materially weaken the bearish thesis")
+        if technical_context.stoch_rsi_k and technical_context.stoch_rsi_k <= 15:
+            lines.append("An oversold StochRSI state increases squeeze risk")
 
     else:
         lines.append("A decisive break out of the current range would invalidate the neutral read")
@@ -130,12 +142,14 @@ def _tactical_stance(symbol: str, bias: BiasInfo, technical_context: TechnicalCo
     return "Stay selective and wait for cleaner confirmation before pressing directional exposure."
 
 
-def _key_risks(symbol: str, bias: BiasInfo, news_bundle: dict) -> list[str]:
+def _key_risks(symbol: str, bias: BiasInfo, technical_context: TechnicalContext, news_bundle: dict) -> list[str]:
     risks = []
 
     macro_news = news_bundle.get("macro_news", [])
     if macro_news:
         risks.append("Macro headlines can quickly shift sentiment even when the ticker-specific thesis looks clean")
+    if technical_context.economic_pressure == "risk_off":
+        risks.append("Economic pressure is risk-off, increasing correlation shocks across equities")
 
     if bias.label.upper() == "BEARISH":
         risks.append("Sharp short-covering reversals remain possible if sellers lose control")
@@ -218,7 +232,7 @@ def build_professional_analysis(
     confirmation = _confirmation_lines(symbol, bias, technical_context)
     invalidation = _invalidation_lines(symbol, bias, technical_context)
     tactical_stance = _tactical_stance(symbol, bias, technical_context)
-    key_risks = _key_risks(symbol, bias, news_bundle)
+    key_risks = _key_risks(symbol, bias, technical_context, news_bundle)
 
     executive_summary = _executive_summary(
         symbol=symbol,
