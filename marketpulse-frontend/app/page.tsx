@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import ChartCard from "@/components/ChartCard";
 import InsightPanels from "@/components/InsightPanels";
 import MetricCards from "@/components/MetricCards";
@@ -220,8 +221,23 @@ export default function HomePage() {
               </div>
             </div>
 
-            {analysis ? (
-              <div className="text-right">
+            <div className="text-right">
+                <div className="mb-2 flex items-center justify-end gap-2">
+                  <Link
+                    href="/login"
+                    className="rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200 hover:bg-white/10"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="rounded-xl bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-black"
+                  >
+                    Register
+                  </Link>
+                </div>
+              {analysis ? (
+                <>
                 <div className="text-3xl font-bold">{analysis.symbol}</div>
                 <div className="mt-1 text-lg text-slate-300">{analysis.company_name}</div>
                 <div className="mt-2 text-sm">
@@ -235,8 +251,9 @@ export default function HomePage() {
                     {activeChange.toFixed(2)}%
                   </span>
                 </div>
-              </div>
-            ) : null}
+                </>
+              ) : null}
+            </div>
           </div>
 
           {mergedAnalysis ? (

@@ -22,6 +22,9 @@ HIGH_QUALITY_SOURCES = {
     "bloomberg": 5,
     "wall street journal": 5,
     "wsj": 5,
+    "financial times": 5,
+    "the economist": 4,
+    "associated press": 4,
     "barrons": 4,
     "cnbc": 4,
     "marketwatch": 3,
@@ -29,6 +32,7 @@ HIGH_QUALITY_SOURCES = {
     "google news rss": 2,
     "finnhub": 2,
 }
+BLOCKED_SOURCES = {"seeking alpha"}
 
 ARTICLE_TYPE_KEYWORDS = {
     "earnings": ["earnings", "eps", "revenue", "guidance", "outlook"],
@@ -38,6 +42,51 @@ ARTICLE_TYPE_KEYWORDS = {
     "product": ["launch", "product", "release", "partnership", "deal", "contract"],
     "geopolitics": ["iran", "oil", "middle east", "war", "sanction", "attack"],
     "pricing": ["price cut", "pricing", "discount", "margin pressure"],
+}
+
+EVENT_SIGNALS = {
+    "guidance_raise": {
+        "keywords": ["raises guidance", "guidance raised", "raises outlook", "increased outlook"],
+        "takeaway": "Management is signaling better forward demand than the market was pricing.",
+        "trade_relevance": "Best used for continuation setups if price accepts above the post-news range high.",
+        "confirmation": "Upside thesis is stronger if follow-through holds beyond the opening reaction range instead of immediately mean-reverting.",
+        "invalidation": "Thesis weakens quickly if the post-news gap is filled and the stock loses the reaction-day low.",
+    },
+    "guidance_cut": {
+        "keywords": ["cuts guidance", "guidance cut", "lowers outlook", "withdraws guidance"],
+        "takeaway": "Forward expectations were reset lower, so valuation multiples can compress until estimates stabilize.",
+        "trade_relevance": "Most actionable as downside continuation or failed-bounce setups rather than first-candle chasing.",
+        "confirmation": "Bearish thesis strengthens if bounces fail near the first post-news supply zone.",
+        "invalidation": "Thesis is weaker if the stock reclaims and holds above the initial breakdown level.",
+    },
+    "cpi_cooling": {
+        "keywords": ["cpi cooled", "inflation cooled", "lower than expected cpi", "soft inflation"],
+        "takeaway": "Cooling inflation can reduce rate-pressure and typically helps duration-sensitive growth assets.",
+        "trade_relevance": "Most useful for index/sector rotation decisions, especially growth vs. defensives.",
+        "confirmation": "Signal is stronger if Treasury yields fade while growth-heavy indices outperform value intraday.",
+        "invalidation": "Signal is weaker if yields rise anyway and growth leadership fails to appear.",
+    },
+    "cpi_hot": {
+        "keywords": ["hotter than expected cpi", "inflation accelerated", "cpi rose", "sticky inflation"],
+        "takeaway": "Hot inflation can push rate expectations higher and pressure risk-asset multiples.",
+        "trade_relevance": "Useful for risk-off planning, especially in high-multiple tech and broad index exposure.",
+        "confirmation": "Signal is stronger if yields rise and high-beta sectors underperform on rebounds.",
+        "invalidation": "Signal weakens if yields fade and risk assets reclaim pre-release levels.",
+    },
+    "analyst_upgrade": {
+        "keywords": ["upgrade", "raised price target", "overweight", "buy rating"],
+        "takeaway": "Sell-side sentiment improved, which can drive short-term flows and repositioning.",
+        "trade_relevance": "Higher quality when the call is echoed by multiple desks, not a one-off mention.",
+        "confirmation": "More credible if the stock outperforms peers for a full session after the note.",
+        "invalidation": "Less credible if relative strength fades by the close despite the upgrade headline.",
+    },
+    "analyst_downgrade": {
+        "keywords": ["downgrade", "cut price target", "underweight", "sell rating"],
+        "takeaway": "Street sentiment worsened, which can keep buyers cautious near resistance.",
+        "trade_relevance": "Works best as context for fade setups when risk appetite is already weak.",
+        "confirmation": "More credible if the stock underperforms peers and fails on rebound attempts.",
+        "invalidation": "Less credible if the stock absorbs the downgrade and closes back above pre-note levels.",
+    },
 }
 
 POSITIVE_TERMS = [
@@ -79,6 +128,10 @@ def _dedupe_articles(raw_articles: list[dict]) -> list[dict]:
     output = []
 
     for article in raw_articles:
+        source_name = _normalize_source(article).lower()
+        if any(blocked in source_name for blocked in BLOCKED_SOURCES):
+            continue
+
         title = _safe_text(article.get("title")).lower()
         url = _safe_text(article.get("url")).lower()
         key = url or re.sub(r"\s+", " ", title)
@@ -106,15 +159,23 @@ def _detect_article_type(text: str) -> str:
     return "general"
 
 
+def _detect_event_signal(text: str) -> str | None:
+    lower = text.lower()
+    for signal_name, signal in EVENT_SIGNALS.items():
+        if any(keyword in lower for keyword in signal["keywords"]):
+            return signal_name
+    return None
+
+
 def _detect_direction(text: str) -> str:
     lower = text.lower()
     pos = sum(1 for x in POSITIVE_TERMS if x in lower)
     neg = sum(1 for x in NEGATIVE_TERMS if x in lower)
 
     if pos > neg:
-      return "bullish"
+        return "bullish"
     if neg > pos:
-      return "bearish"
+        return "bearish"
     return "neutral"
 
 
@@ -185,75 +246,116 @@ def _time_horizon(article_type: str) -> str:
     return "short_term"
 
 
-def _key_takeaway(symbol: str, article_type: str, direction: str, relevance: str) -> str:
+def _fallback_takeaway(symbol: str, article_type: str, direction: str, relevance: str) -> str:
     if article_type == "earnings":
         if direction == "bullish":
-            return f"{symbol} has an earnings-related catalyst that may support upside if the market likes the results and guidance."
+            return f"{symbol} has an earnings catalyst that can support upside if estimate revisions keep moving higher over the next sessions."
         if direction == "bearish":
-            return f"{symbol} has an earnings-related catalyst that could pressure price if traders focus on weaker guidance or margins."
-        return f"{symbol} has an earnings-related headline, but the directional read is not strong enough yet."
+            return f"{symbol} has an earnings catalyst that can pressure price if estimate cuts or margin concerns continue."
+        return f"{symbol} has an earnings headline, but directional conviction is still mixed."
 
     if article_type == "macro":
-        return f"This macro headline matters because broader market tone and rates expectations can influence {symbol} in the near term."
+        return f"This macro headline can reprice rates and risk appetite, which often drives near-term movement in {symbol}."
 
     if article_type == "analyst":
-        return f"Analyst commentary can move short-term sentiment, but price confirmation matters more than the headline alone."
+        return "Analyst commentary matters most when it aligns with broader sector positioning and relative strength."
 
     if article_type == "regulatory":
-        return f"Regulatory headlines matter because they increase uncertainty and can weaken conviction until more detail comes out."
+        return "Regulatory risk can keep positioning defensive until legal or policy details become clearer."
 
     if article_type == "pricing":
-        return f"Pricing-related headlines matter because they can change expectations around demand, margins, and competition."
+        return "Pricing headlines can shift margin and demand assumptions quickly, especially in competitive categories."
 
     if relevance == "high":
-        return f"This headline appears relevant to {symbol}, but it still needs price confirmation before it becomes a strong trading input."
+        return f"This headline is symbol-relevant for {symbol}, but it still needs market follow-through to become a high-conviction setup."
 
-    return "This headline adds context, but it is not strong enough by itself to define the trade thesis."
+    return "This adds context to the tape but is not strong enough on its own to define positioning."
 
 
-def _trade_relevance(symbol: str, article_type: str, direction: str, market_scope: str) -> str:
+def _fallback_trade_relevance(symbol: str, article_type: str, direction: str, market_scope: str) -> str:
     if article_type == "macro" and symbol in ETF_MACRO_SYMBOLS:
         if direction == "bullish":
-            return f"Useful for index traders if {symbol} strengthens with breadth and holds early support after the headline."
+            return f"Actionable for index traders if {symbol} leads intraday and risk-on sectors keep relative strength."
         if direction == "bearish":
-            return f"Useful for index traders if {symbol} fails to hold rebounds and sellers stay in control after the headline."
-        return f"Relevant for index traders, but this needs confirmation from broad market price action before acting on it."
+            return f"Actionable for index traders if {symbol} remains offered and defensives outperform."
+        return f"Relevant for index traders, but requires clear sector/breadth confirmation before acting."
 
     if direction == "bullish":
-        return f"Most useful if {symbol} starts attracting buyers above nearby resistance instead of fading the headline."
+        return f"Most useful when {symbol} shows persistent relative strength versus its sector peers after the headline."
     if direction == "bearish":
-        return f"Most useful if {symbol} cannot reclaim resistance and sellers keep control on retests."
+        return f"Most useful when {symbol} underperforms peers and fails to hold rebound attempts."
     if market_scope == "ticker":
-        return f"Relevant mainly as supporting context; the trade should still be driven by whether {symbol} confirms the story on price."
-    return "This is context, not a standalone trade signal. Let price action decide whether it becomes actionable."
+        return f"Useful as supporting context while waiting for clearer directional acceptance in {symbol}."
+    return "Use as background context rather than a direct trigger."
 
 
-def _confirmation(direction: str, article_type: str, symbol: str, market_scope: str) -> str | None:
+def _fallback_confirmation(direction: str, article_type: str, symbol: str) -> str | None:
     if direction == "bullish":
         if article_type == "earnings":
-            return f"Confirmation improves if {symbol} holds the post-headline move and continues above nearby resistance with volume."
-        if market_scope == "macro":
-            return f"Confirmation improves if the market absorbs the headline well and {symbol} participates with broad strength."
-        return f"Confirmation improves if buyers defend pullbacks and the stock keeps making higher intraday lows."
+            return f"Confirmation improves if {symbol} holds above its first post-earnings balance area for a full session."
+        return f"Confirmation improves if {symbol} keeps making higher lows after the headline window."
 
     if direction == "bearish":
         if article_type in {"macro", "geopolitics"} and symbol in ETF_MACRO_SYMBOLS:
-            return f"Confirmation improves if sellers stay in control on rebounds and {symbol} continues failing near resistance."
-        return f"Confirmation improves if the stock cannot reclaim key levels and downside follow-through appears on bounces."
+            return f"Confirmation improves if rebound attempts in {symbol} fail while yields stay elevated."
+        return f"Confirmation improves if {symbol} cannot reclaim the initial headline breakdown zone."
 
     return None
 
 
-def _invalidation(direction: str, article_type: str, symbol: str, market_scope: str) -> str | None:
+def _fallback_invalidation(direction: str, article_type: str, symbol: str) -> str | None:
     if direction == "bullish":
-        return f"The bullish read weakens if {symbol} cannot hold the headline reaction and quickly slips back below support."
+        return f"Bullish read weakens if {symbol} loses the reaction-day support zone and cannot reclaim it quickly."
 
     if direction == "bearish":
         if article_type == "macro" and symbol in ETF_MACRO_SYMBOLS:
-            return f"The bearish read weakens if the market shrugs off the headline and {symbol} reclaims resistance with improving breadth."
-        return f"The bearish read weakens if sellers lose control and {symbol} reclaims levels that the headline initially pushed it below."
+            return f"Bearish read weakens if {symbol} recovers pre-headline levels while yields and credit spreads normalize."
+        return f"Bearish read weakens if {symbol} recovers above the level that triggered the initial sell response."
 
     return None
+
+
+def _context_pack(symbol: str, article_type: str, direction: str, relevance: str, market_scope: str, text: str) -> tuple[str, str, str | None, str | None]:
+    signal_name = _detect_event_signal(text)
+    if signal_name:
+        signal = EVENT_SIGNALS[signal_name]
+        return (
+            signal["takeaway"],
+            signal["trade_relevance"],
+            signal["confirmation"],
+            signal["invalidation"],
+        )
+
+    return (
+        _fallback_takeaway(symbol, article_type, direction, relevance),
+        _fallback_trade_relevance(symbol, article_type, direction, market_scope),
+        _fallback_confirmation(direction, article_type, symbol),
+        _fallback_invalidation(direction, article_type, symbol),
+    )
+
+
+def _sentence_chunks(text: str) -> list[str]:
+    cleaned = re.sub(r"\s+", " ", text).strip()
+    if not cleaned:
+        return []
+    pieces = re.split(r"(?<=[.!?])\s+", cleaned)
+    return [piece.strip() for piece in pieces if piece.strip()]
+
+
+def _professional_summary(text: str, fallback: str) -> str:
+    chunks = _sentence_chunks(text)
+    if not chunks:
+        return fallback
+    if len(chunks) == 1:
+        return chunks[0]
+    return f"{chunks[0]} {chunks[1]}"
+
+
+def _eli5_summary(symbol: str, key_takeaway: str, trade_relevance: str) -> str:
+    return (
+        f"ELI5: Big money saw a story that might move {symbol}. "
+        f"{key_takeaway} What traders do with it: {trade_relevance}"
+    )
 
 
 def _article_score(symbol: str, article: dict) -> int:
@@ -277,6 +379,9 @@ def _article_score(symbol: str, article: dict) -> int:
         score += 3
 
     if direction in {"bullish", "bearish"}:
+        score += 2
+
+    if _detect_event_signal(text):
         score += 2
 
     if article.get("publishedAt"):
@@ -322,6 +427,17 @@ def _to_interpreted(symbol: str, article: dict) -> InterpretedArticle:
     importance = _importance(article_type, relevance, source)
     time_horizon = _time_horizon(article_type)
 
+    key_takeaway, trade_relevance, confirmation_to_watch, invalidation_to_watch = _context_pack(
+        symbol=symbol,
+        article_type=article_type,
+        direction=direction,
+        relevance=relevance,
+        market_scope=market_scope,
+        text=text,
+    )
+    professional_takeaway = _professional_summary(text, key_takeaway)
+    eli5_takeaway = _eli5_summary(symbol, key_takeaway, trade_relevance)
+
     return InterpretedArticle(
         title=_safe_text(article.get("title")) or "Untitled article",
         source=source,
@@ -331,15 +447,15 @@ def _to_interpreted(symbol: str, article: dict) -> InterpretedArticle:
         relevance=relevance,
         direction=direction,
         impact=importance,
-        explanation=_key_takeaway(symbol, article_type, direction, relevance),
+        explanation=eli5_takeaway,
         mentioned_tickers=_extract_tickers(text),
         importance=importance,
         time_horizon=time_horizon,
         market_scope=market_scope,
-        key_takeaway=_key_takeaway(symbol, article_type, direction, relevance),
-        trade_relevance=_trade_relevance(symbol, article_type, direction, market_scope),
-        confirmation_to_watch=_confirmation(direction, article_type, symbol, market_scope),
-        invalidation_to_watch=_invalidation(direction, article_type, symbol, market_scope),
+        key_takeaway=professional_takeaway,
+        trade_relevance=trade_relevance,
+        confirmation_to_watch=confirmation_to_watch,
+        invalidation_to_watch=invalidation_to_watch,
         impact_area=[],
     )
 

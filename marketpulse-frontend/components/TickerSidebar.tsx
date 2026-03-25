@@ -8,7 +8,7 @@ type Props = {
   onAnalyze: (ticker: string) => void;
 };
 
-type SidebarTab = "favorites" | "hot" | "trending" | "etfs" | "tech";
+type SidebarTab = "favorites" | "hot" | "trending" | "etfs" | "tech" | "all";
 
 const TAB_ITEMS: Record<SidebarTab, string[]> = {
   favorites: ["SPY", "QQQ", "AAPL", "NVDA", "TSLA"],
@@ -16,6 +16,12 @@ const TAB_ITEMS: Record<SidebarTab, string[]> = {
   trending: ["TSLA", "META", "AMZN", "NFLX", "GOOGL"],
   etfs: ["SPY", "QQQ", "IWM", "DIA"],
   tech: ["AAPL", "MSFT", "NVDA", "AMD", "META", "GOOGL"],
+  all: [
+    "SPY", "QQQ", "IWM", "DIA", "AAPL", "MSFT", "NVDA", "AMD", "TSLA", "META",
+    "AMZN", "GOOGL", "NFLX", "PLTR", "AVGO", "SMCI", "MU", "INTC", "CRM", "ADBE",
+    "JPM", "BAC", "GS", "WFC", "XOM", "CVX", "COP", "SLB", "UNH", "JNJ",
+    "PFE", "LLY", "MRK", "KO", "PEP", "MCD", "NKE", "WMT", "COST", "HD",
+  ],
 };
 
 export default function TickerSidebar({ symbol, onSelect, onAnalyze }: Props) {
@@ -91,6 +97,12 @@ export default function TickerSidebar({ symbol, onSelect, onAnalyze }: Props) {
         >
           Tech
         </button>
+        <button
+          className={`col-span-2 rounded-xl px-3 py-2 text-sm ${tab === "all" ? "bg-emerald-500 text-black" : "bg-[#0b1323] text-slate-300"}`}
+          onClick={() => setTab("all")}
+        >
+          Full ticker list
+        </button>
       </div>
 
       <div className="mt-6">
@@ -100,6 +112,7 @@ export default function TickerSidebar({ symbol, onSelect, onAnalyze }: Props) {
           {tab === "trending" && "Trending"}
           {tab === "etfs" && "ETFs"}
           {tab === "tech" && "Tech"}
+          {tab === "all" && "All tracked tickers"}
         </div>
 
         <div className="mt-3 space-y-2">
