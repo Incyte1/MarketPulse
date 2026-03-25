@@ -43,8 +43,21 @@ class TechnicalContext(BaseModel):
     trend_medium: str = "unknown"
     price_vs_20d: str = "unknown"
     price_vs_50d: str = "unknown"
+    price_vs_200d: str = "unknown"
     distance_from_20d_percent: float = 0.0
     distance_from_50d_percent: float = 0.0
+    distance_from_200d_percent: float = 0.0
+    ema_20: float = 0.0
+    ema_50: float = 0.0
+    ema_200: float = 0.0
+    macd: float = 0.0
+    macd_signal: float = 0.0
+    macd_histogram: float = 0.0
+    stoch_rsi_k: float = 50.0
+    stoch_rsi_d: float = 50.0
+    support_level: float = 0.0
+    resistance_level: float = 0.0
+    economic_pressure: str = "neutral"
     momentum_state: str = "unknown"
     structure_score: int = 0
 

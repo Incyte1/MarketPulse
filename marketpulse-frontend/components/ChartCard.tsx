@@ -19,6 +19,14 @@ type Props = {
   loading?: boolean;
 };
 
+const PLATFORM_WATCHLIST = [
+  "AMEX:SPY", "AMEX:QQQ", "AMEX:IWM", "AMEX:DIA",
+  "NASDAQ:AAPL", "NASDAQ:MSFT", "NASDAQ:NVDA", "NASDAQ:AMD",
+  "NASDAQ:TSLA", "NASDAQ:META", "NASDAQ:AMZN", "NASDAQ:GOOGL",
+  "NASDAQ:NFLX", "NASDAQ:PLTR", "NASDAQ:AVGO", "NASDAQ:SMCI",
+  "NASDAQ:MU", "NASDAQ:INTC", "NYSE:JPM", "NYSE:XOM",
+];
+
 function mapIntervalToTradingView(interval: string): string {
   switch (interval) {
     case "1min":
@@ -78,7 +86,7 @@ export default function ChartCard({
       style: "1",
       locale: "en",
       enable_publishing: false,
-      allow_symbol_change: false,
+      allow_symbol_change: true,
       withdateranges: true,
       hide_side_toolbar: false,
       details: true,
@@ -86,7 +94,7 @@ export default function ChartCard({
       calendar: true,
       news: true,
       save_image: true,
-      watchlist: [],
+      watchlist: PLATFORM_WATCHLIST,
       support_host: "https://www.tradingview.com",
       studies: [
         "Volume@tv-basicstudies",

@@ -31,6 +31,7 @@ function keyForArticle(article: InterpretedArticle, idx: number) {
 }
 
 function eli5(article: InterpretedArticle, symbol: string) {
+  if (article.explanation) return article.explanation;
   const why = article.key_takeaway || article.explanation || "This is a market story that may matter.";
   const trade = article.trade_relevance || "Traders are watching to see whether price agrees with the story.";
 
@@ -152,7 +153,7 @@ function ArticleCard({
               Support / Resistance
             </div>
             <div className="mt-1 text-sm text-slate-300">
-              Exact support and resistance prices are not available in the current backend response yet, so MarketPulse is not guessing here.
+              Exact support and resistance prices are shown in Trade Context from backend technical levels.
             </div>
           </div>
         </div>
@@ -275,6 +276,21 @@ export default function InsightPanels({ analysis, horizon = "short_term" }: Prop
                 {(analysis.professional_analysis?.confirmation || []).length
                   ? analysis.professional_analysis.confirmation.join(" • ")
                   : "No confirmation factors listed."}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-[#0b1323] p-4">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-slate-500">Technical stack</div>
+              <div className="mt-2 text-sm text-slate-200">
+                EMA20/50/200: {analysis.technical_context.ema_20?.toFixed(2) ?? "n/a"} / {analysis.technical_context.ema_50?.toFixed(2) ?? "n/a"} / {analysis.technical_context.ema_200?.toFixed(2) ?? "n/a"}
+                <br />
+                MACD: {analysis.technical_context.macd?.toFixed(4) ?? "n/a"} (signal {analysis.technical_context.macd_signal?.toFixed(4) ?? "n/a"})
+                <br />
+                StochRSI K/D: {analysis.technical_context.stoch_rsi_k?.toFixed(1) ?? "n/a"} / {analysis.technical_context.stoch_rsi_d?.toFixed(1) ?? "n/a"}
+                <br />
+                Economic pressure: {analysis.technical_context.economic_pressure || "neutral"}
+                <br />
+                Support/Resistance: {analysis.technical_context.support_level?.toFixed(2) ?? "n/a"} / {analysis.technical_context.resistance_level?.toFixed(2) ?? "n/a"}
               </div>
             </div>
 
