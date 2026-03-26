@@ -13,7 +13,12 @@ from app.services.refresh_service import refresh_symbol_cache
 from app.services.refresh_tasks import run_once
 from app.services.market_data_service import get_price_context
 from app.services.technical_service import get_technical_context
-from app.services.news_service import get_symbol_news_bundle
+from app.services.news_service import (
+    enrich_news_bundle_with_market_context,
+    filter_news_bundle_for_interval,
+    get_symbol_news_bundle,
+    sanitize_interpreted_articles,
+)
 from app.services.bias_service import calculate_bias
 from app.services.guidance_service import build_guidance
 from app.services.pro_analysis_service import build_professional_analysis
@@ -21,6 +26,19 @@ from app.utils.market_hours import get_market_status
 from app.utils.symbols import company_name
 
 router = APIRouter()
+
+
+def _sanitize_summary_payload(payload: dict) -> dict:
+    sanitized = dict(payload)
+    sanitized["interpreted_ticker_news"] = [
+        item.model_dump()
+        for item in sanitize_interpreted_articles(payload.get("interpreted_ticker_news", []))
+    ]
+    sanitized["interpreted_macro_news"] = [
+        item.model_dump()
+        for item in sanitize_interpreted_articles(payload.get("interpreted_macro_news", []))
+    ]
+    return sanitized
 
 
 def _empty_summary(symbol: str) -> TickerAnalysisResponse:
@@ -90,12 +108,12 @@ def ticker_summary(
 
     fresh = cache_get(cache_key, max_age_seconds=900)
     if fresh:
-        return TickerAnalysisResponse(**fresh)
+        return TickerAnalysisResponse(**_sanitize_summary_payload(fresh))
 
     stale = cache_get(cache_key, max_age_seconds=60 * 60 * 24)
     if stale:
         run_once(f"summary-refresh:{symbol}:{interval}", refresh_symbol_cache, symbol, interval)
-        return TickerAnalysisResponse(**stale)
+        return TickerAnalysisResponse(**_sanitize_summary_payload(stale))
 
     run_once(f"summary-refresh:{symbol}:{interval}", refresh_symbol_cache, symbol, interval)
     return _empty_summary(symbol)
@@ -110,8 +128,14 @@ def ticker_analysis(
 
     try:
         price_context = get_price_context(symbol)
-        technical_context = get_technical_context(symbol)
-        news_bundle = get_symbol_news_bundle(symbol)
+        technical_context = get_technical_context(symbol, interval=interval)
+        news_bundle = enrich_news_bundle_with_market_context(
+            symbol=symbol,
+            price_context=price_context,
+            technical_context=technical_context,
+            news_bundle=filter_news_bundle_for_interval(get_symbol_news_bundle(symbol), interval),
+            interval=interval,
+        )
         bias = calculate_bias(news_bundle, technical_context)
         market_status = get_market_status()
 
@@ -120,6 +144,7 @@ def ticker_analysis(
             bias=bias,
             market_status=market_status["market_status"],
             interval=interval,
+            technical_context=technical_context,
         )
 
         professional_analysis = build_professional_analysis(
@@ -129,6 +154,7 @@ def ticker_analysis(
             technical_context=technical_context,
             news_bundle=news_bundle,
             market_status=market_status["market_status"],
+            interval=interval,
         )
 
         return TickerAnalysisResponse(

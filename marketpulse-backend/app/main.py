@@ -2,7 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.router import api_router
 from app.core.config import settings
+from app.services.auth_service import init_auth_db
 from app.services.cache_db import init_cache_db
+from app.services.workflow_service import init_workflow_db
 
 app = FastAPI(
     title=settings.app_name,
@@ -22,6 +24,8 @@ app.add_middleware(
 )
 
 init_cache_db()
+init_auth_db()
+init_workflow_db()
 app.include_router(api_router, prefix="/api")
 
 

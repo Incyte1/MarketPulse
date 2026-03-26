@@ -1,9 +1,9 @@
-# MarketPulse Frontend
+# Unveni Frontend
 
 ## Setup
 1. Copy `.env.local.example` to `.env.local`
 2. Make sure your FastAPI backend is running on `http://127.0.0.1:8000`
-3. Install dependencies (required before any `npm run build`):
+3. Install dependencies:
    ```bash
    npm ci
    ```
@@ -14,6 +14,14 @@
 
 Open `http://localhost:3000`
 
+## Environment variables
+```bash
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+NEXT_PUBLIC_SITE_URL=https://unveni.com
+```
+
+`NEXT_PUBLIC_SITE_URL` is used for metadata, canonical URLs, and the domain-facing brand configuration.
+
 ## Build troubleshooting (Windows PowerShell)
 If you see:
 
@@ -21,27 +29,53 @@ If you see:
 
 it means dependencies were not installed in `node_modules`.
 
-Run:
+`npm run build` now installs dependencies automatically only when `node_modules` is missing, then runs `next build`, so on a fresh clone you can usually just run:
 ```powershell
-npm ci
 npm run build
 ```
 
-The project now includes a `check:next` pre-check in the build script to print a direct dependency error message when Next.js is missing.
+If you want to install dependencies separately first, run:
+```powershell
+npm ci
+```
 
 ## Auth pages included
 - `/login`
 - `/register`
 
-Current social login buttons are local demo flows (Google/Facebook UI only, no backend OAuth exchange yet).
-
-Seeded local admin account:
-- Email: `admin@marketpulse.dev`
-- Password: `Admin@12345`
+Authentication now uses backend-backed email/password accounts with persistent sessions.
 
 ## What this includes
-- Premium dark dashboard shell
-- Search + quick picks
-- TradingView advanced chart widget with watchlist
+- Reworked Unveni workstation shell
+- Search + quick-open coverage rail
+- TradingView advanced chart widget with drawing tools
 - Backend wiring for summary/news/refresh APIs
-- Login/register pages and local demo auth
+- Login/register pages with real backend auth
+
+## Cloudflare deploy
+The production frontend is configured as a static-assets Worker for `https://unveni.com`.
+
+From `marketpulse-frontend`:
+
+```powershell
+npm run deploy
+```
+
+Production builds use `.env.production`, which keeps frontend API calls same-origin so the Worker can proxy `/api/*` into the backend tunnel.
+
+The live Worker now reaches the backend through a Workers VPC service binding backed by the `unveni-api` Cloudflare Tunnel, which points to `http://127.0.0.1:8000`.
+
+## Hosted backend option
+If you move the FastAPI backend onto a real server, set a Worker environment variable named `API_ORIGIN` to that public backend origin, for example:
+
+```text
+API_ORIGIN=https://unveni-api.onrender.com
+```
+
+When `API_ORIGIN` is set, the Worker proxies `/api/*` to that origin and no longer depends on the local Cloudflare tunnel.
+
+Then redeploy the Worker:
+
+```powershell
+npm run deploy
+```

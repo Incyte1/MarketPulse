@@ -1,0 +1,69 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e8]:
+          - generic [ref=e9]:
+            - link "Research Operating System Unveni logo" [ref=e10] [cursor=pointer]:
+              - /url: /
+              - generic [ref=e11]:
+                - generic [ref=e12]: Research Operating System
+                - img "Unveni logo" [ref=e13]
+            - generic [ref=e14]: Login
+          - generic [ref=e15]:
+            - generic [ref=e16]: Secure Sign-In
+            - heading "Sign in and return straight to the desk." [level=1] [ref=e17]
+            - paragraph [ref=e18]: Use your Unveni credentials to restore desks, alerts, source-linked memos, and active market context.
+          - generic [ref=e19]:
+            - generic [ref=e20]:
+              - generic [ref=e21]: "1"
+              - generic [ref=e22]: Separate short-term and long-term engines
+            - generic [ref=e23]:
+              - generic [ref=e24]: "2"
+              - generic [ref=e25]: Catalyst ranking with confirmation and invalidation
+            - generic [ref=e26]:
+              - generic [ref=e27]: "3"
+              - generic [ref=e28]: Saved workspaces, alerts, and memo sync
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - generic [ref=e31]: Coverage
+            - generic [ref=e32]: 1D / 1H
+            - generic [ref=e33]: Intraday engine
+          - generic [ref=e34]:
+            - generic [ref=e35]: Thesis
+            - generic [ref=e36]: 1W / 1D
+            - generic [ref=e37]: Swing engine
+          - generic [ref=e38]:
+            - generic [ref=e39]: Workflow
+            - generic [ref=e40]: API Auth
+            - generic [ref=e41]: Persistent sync
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - generic [ref=e45]: Secure access
+          - generic [ref=e46]: Workspace authentication
+        - generic [ref=e47]:
+          - generic [ref=e48]: Welcome Back
+          - generic [ref=e49]: Sign in to continue.
+          - paragraph [ref=e50]: Your session is validated against the backend before the workspace opens.
+        - generic [ref=e51]:
+          - generic [ref=e52]: Desks
+          - generic [ref=e53]: Alerts
+          - generic [ref=e54]: Memo sync
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - text: Email
+            - textbox "Email" [ref=e57]:
+              - /placeholder: analyst@firm.com
+          - generic [ref=e58]:
+            - text: Password
+            - generic [ref=e59]:
+              - textbox "Password" [ref=e60]:
+                - /placeholder: Enter your password
+              - button "Show" [ref=e61] [cursor=pointer]
+          - button "Log in" [ref=e62] [cursor=pointer]
+        - generic [ref=e63]:
+          - text: New to Unveni?
+          - link "Create an account" [ref=e64] [cursor=pointer]:
+            - /url: /register
+  - button "Open Next.js Dev Tools" [ref=e70] [cursor=pointer]:
+    - img [ref=e71]

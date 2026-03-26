@@ -1,11 +1,11 @@
 import json
 import sqlite3
 import time
-from pathlib import Path
 from typing import Any, Optional
 
+from app.core.config import settings
 
-DB_PATH = Path("marketpulse_cache.db")
+DB_PATH = settings.resolve_data_path(settings.cache_db_path)
 
 
 def _connect() -> sqlite3.Connection:

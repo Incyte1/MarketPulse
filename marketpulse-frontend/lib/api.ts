@@ -32,6 +32,13 @@ export type PriceContext = {
 };
 
 export type TechnicalContext = {
+  analysis_timeframe: string;
+  data_source_interval?: string;
+  data_range?: string;
+  calibration_window?: string;
+  fast_indicator_label?: string;
+  medium_indicator_label?: string;
+  slow_indicator_label?: string;
   trend_short: string;
   trend_medium: string;
   price_vs_20d: string;
@@ -50,6 +57,17 @@ export type TechnicalContext = {
   stoch_rsi_d?: number;
   support_level?: number;
   resistance_level?: number;
+  support_basis?: string;
+  resistance_basis?: string;
+  vwap?: number;
+  atr?: number;
+  range_position_percent?: number;
+  trend_score?: number;
+  momentum_score?: number;
+  level_score?: number;
+  exhaustion_score?: number;
+  volatility_state?: string;
+  regime_state?: string;
   economic_pressure?: string;
   momentum_state: string;
   structure_score: number;
@@ -114,7 +132,16 @@ async function apiGet<T>(path: string): Promise<T> {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || `Request failed: ${res.status}`);
+    let message = text;
+
+    try {
+      const parsed = JSON.parse(text) as { detail?: string };
+      message = parsed.detail || text;
+    } catch {
+      message = text;
+    }
+
+    throw new Error(message || `Request failed: ${res.status}`);
   }
 
   return res.json();
@@ -126,15 +153,15 @@ export async function fetchAnalysis(symbol: string, interval: string): Promise<A
   );
 }
 
-export async function fetchNews(symbol: string): Promise<NewsResponse> {
+export async function fetchNews(symbol: string, interval: string): Promise<NewsResponse> {
   return apiGet<NewsResponse>(
-    `/api/ticker/${encodeURIComponent(symbol)}/news`
+    `/api/ticker/${encodeURIComponent(symbol)}/news?interval=${encodeURIComponent(interval)}`
   );
 }
 
-export async function triggerRefresh(symbol: string, interval: string): Promise<void> {
+export async function triggerRefresh(symbol: string, interval: string, range: string): Promise<void> {
   const res = await fetch(
-    `${API_BASE}/api/ticker/${encodeURIComponent(symbol)}/refresh?interval=${encodeURIComponent(interval)}&range=1Y`,
+    `${API_BASE}/api/ticker/${encodeURIComponent(symbol)}/refresh?interval=${encodeURIComponent(interval)}&range=${encodeURIComponent(range)}`,
     {
       method: "POST",
       cache: "no-store",
@@ -143,6 +170,15 @@ export async function triggerRefresh(symbol: string, interval: string): Promise<
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || `Refresh failed: ${res.status}`);
+    let message = text;
+
+    try {
+      const parsed = JSON.parse(text) as { detail?: string };
+      message = parsed.detail || text;
+    } catch {
+      message = text;
+    }
+
+    throw new Error(message || `Refresh failed: ${res.status}`);
   }
 }

@@ -8,139 +8,124 @@ type Props = {
   horizon?: "short_term" | "long_term";
 };
 
-type DetailKey = "bias" | "confidence" | "driver" | null;
+type DetailKey = "bias" | "confidence" | "driver" | "plan";
 
-function cardTone(value: string) {
-  const v = value.toLowerCase();
-  if (v.includes("bull")) return "border-emerald-500/20 bg-emerald-500/10 text-emerald-300";
-  if (v.includes("bear")) return "border-rose-500/20 bg-rose-500/10 text-rose-300";
-  return "border-white/10 bg-white/5 text-slate-300";
+type TapeItem = {
+  id: DetailKey;
+  label: string;
+  headline: string;
+  subline: string;
+  detail: string;
+  tone: string;
+};
+
+function readable(value?: string | null) {
+  return (value || "unknown").replaceAll("_", " ");
+}
+
+function toneClass(value: string) {
+  const normalized = value.toLowerCase();
+
+  if (normalized.includes("bull")) return "signal-positive";
+  if (normalized.includes("bear")) return "signal-negative";
+  if (normalized.includes("high")) return "text-amber-300";
+  return "signal-neutral";
 }
 
 export default function MetricCards({ analysis, horizon = "short_term" }: Props) {
-  const [openDetail, setOpenDetail] = useState<DetailKey>(null);
+  const [activeItem, setActiveItem] = useState<DetailKey>("bias");
 
-  const biasReason = useMemo(() => {
-    const parts: string[] = [];
-    const bias = analysis.bias;
+  const tape = useMemo<TapeItem[]>(() => {
     const tech = analysis.technical_context;
     const pro = analysis.professional_analysis;
-
-    parts.push(
-      `MarketPulse is calling the current setup ${bias.label.toLowerCase()} because the combined technical and catalyst read leans that way.`
-    );
-
-    if (tech.trend_medium !== "unknown") {
-      parts.push(`The medium-term trend is ${tech.trend_medium}.`);
-    }
-    if (tech.price_vs_20d !== "unknown" && tech.price_vs_50d !== "unknown") {
-      parts.push(
-        `Price is ${tech.price_vs_20d} the 20-day context and ${tech.price_vs_50d} the 50-day context.`
-      );
-    }
-    if (pro.confirmation?.length) {
-      parts.push(`Key confirming factors: ${pro.confirmation.join(" • ")}.`);
-    }
-
-    return parts.join(" ");
-  }, [analysis]);
-
-  const confidenceReason = useMemo(() => {
-    const bias = analysis.bias;
-    const pro = analysis.professional_analysis;
+    const guidance = analysis.guidance;
 
     return [
-      `Confidence is ${bias.confidence_label.toLowerCase()} because the system is measuring how well technical structure, catalysts, and follow-through agree with each other.`,
-      `Current confidence score: ${bias.confidence_value} out of 100.`,
-      pro.invalidation?.length
-        ? `Confidence is limited by these risks: ${pro.invalidation.join(" • ")}.`
-        : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
-  }, [analysis]);
+      {
+        id: "bias",
+        label: "Bias",
+        headline: analysis.bias.label,
+        subline: `${analysis.bias.internal_score}/${analysis.bias.total_score} composite`,
+        detail: `Trend ${tech.trend_medium}, momentum ${tech.momentum_state}, and structure ${tech.structure_score} are driving the active bias.`,
+        tone: toneClass(analysis.bias.label),
+      },
+      {
+        id: "confidence",
+        label: "Conviction",
+        headline: analysis.bias.confidence_label,
+        subline: `${analysis.bias.confidence_value}/100 confidence`,
+        detail: pro.confirmation.length
+          ? `Confirmation stack: ${pro.confirmation.join(" | ")}.`
+          : "No confirmation stack is available yet.",
+        tone: toneClass(analysis.bias.confidence_label),
+      },
+      {
+        id: "driver",
+        label: "Driver",
+        headline: readable(pro.primary_driver),
+        subline: `${pro.secondary_drivers.length} secondary factors`,
+        detail: pro.secondary_drivers.length
+          ? `Secondary drivers: ${pro.secondary_drivers.join(" | ")}.`
+          : "No secondary drivers are listed for the current read.",
+        tone: "text-[#f0d7d1]",
+      },
+      {
+        id: "plan",
+        label: "Plan",
+        headline: readable(guidance.preferred_direction),
+        subline: horizon === "short_term" ? "Execution mode" : "Thesis mode",
+        detail: guidance.warnings.length
+          ? `Warnings: ${guidance.warnings.join(" | ")}.`
+          : guidance.summary || "No active warning set.",
+        tone: "signal-neutral",
+      },
+    ];
+  }, [analysis, horizon]);
 
-  const driverReason = useMemo(() => {
-    const pro = analysis.professional_analysis;
-    const readableDriver = (pro.primary_driver || "unknown").replaceAll("_", " ");
-
-    return [
-      `Primary driver means the strongest force shaping the current setup right now.`,
-      `For this ticker, the main driver is ${readableDriver}.`,
-      pro.secondary_drivers?.length
-        ? `Other supporting drivers: ${pro.secondary_drivers.join(" • ")}.`
-        : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
-  }, [analysis]);
-
-  const detailText =
-    openDetail === "bias"
-      ? biasReason
-      : openDetail === "confidence"
-      ? confidenceReason
-      : openDetail === "driver"
-      ? driverReason
-      : null;
+  const activeDetail = tape.find((item) => item.id === activeItem) ?? tape[0];
 
   return (
-    <>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div className="panel p-5">
-          <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Ticker</div>
-          <div className="mt-3 text-2xl font-semibold">{analysis.symbol}</div>
-          <div className="mt-1 text-sm text-slate-400">{analysis.company_name}</div>
+    <section className="frame-shell reveal-up reveal-delay-1 overflow-hidden p-0">
+      <div className="border-b border-white/8 px-4 py-3 lg:px-5">
+        <div>
+          <div className="eyebrow">Decision</div>
+          <div className="mt-1 text-sm text-[var(--text-soft)]">
+            Bias, conviction, driver, and plan for the active horizon.
+          </div>
         </div>
-
-        <button
-          className="panel p-5 text-left transition hover:border-white/20"
-          onClick={() => setOpenDetail(openDetail === "bias" ? null : "bias")}
-        >
-          <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Bias</div>
-          <div className={`mt-3 inline-flex rounded-full border px-3 py-1 text-sm ${cardTone(analysis.bias.label)}`}>
-            {analysis.bias.label}
-          </div>
-          <div className="mt-3 text-sm text-slate-300">
-            {(analysis.professional_analysis?.regime || "unknown").replaceAll("_", " ")}
-          </div>
-          <div className="mt-2 text-xs text-cyan-300">Click to see why</div>
-        </button>
-
-        <button
-          className="panel p-5 text-left transition hover:border-white/20"
-          onClick={() => setOpenDetail(openDetail === "confidence" ? null : "confidence")}
-        >
-          <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Confidence</div>
-          <div className="mt-3 text-2xl font-semibold">{analysis.bias.confidence_label}</div>
-          <div className="mt-1 text-sm text-slate-400">
-            {analysis.bias.confidence_value} / 100 strength
-          </div>
-          <div className="mt-2 text-xs text-cyan-300">Click to see why</div>
-        </button>
-
-        <button
-          className="panel p-5 text-left transition hover:border-white/20"
-          onClick={() => setOpenDetail(openDetail === "driver" ? null : "driver")}
-        >
-          <div className="text-xs uppercase tracking-[0.18em] text-slate-500">Primary Driver</div>
-          <div className="mt-3 text-xl font-semibold">
-            {(analysis.professional_analysis?.primary_driver || "unknown").replaceAll("_", " ")}
-          </div>
-          <div className="mt-1 text-sm text-slate-400">
-            {horizon === "short_term"
-              ? "Short-term catalyst and structure read"
-              : "Longer-term trend and thesis read"}
-          </div>
-          <div className="mt-2 text-xs text-cyan-300">Click to see why</div>
-        </button>
       </div>
 
-      {detailText ? (
-        <div className="mt-4 rounded-2xl border border-cyan-500/20 bg-cyan-500/10 p-4 text-sm text-cyan-100">
-          {detailText}
+      <div className="grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-4">
+        {tape.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={`sub-surface px-4 py-4 text-left transition hover:border-white/16 ${
+              activeItem === item.id ? "border-[var(--accent)]/30 bg-[var(--accent)]/10" : ""
+            }`}
+            onClick={() => setActiveItem(item.id)}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="field-label">{item.label}</div>
+              {activeItem === item.id ? <div className="desk-chip mono">Focus</div> : null}
+            </div>
+            <div className={`mt-3 text-lg font-semibold ${item.tone}`}>{item.headline}</div>
+            <div className="mt-2 text-sm text-[var(--text-soft)]">{item.subline}</div>
+          </button>
+        ))}
+      </div>
+
+      <div className="border-t border-white/8 px-4 py-3 lg:px-5">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="field-label">{activeDetail.label}</div>
+            <div className="mt-2 text-sm leading-7 text-slate-200">{activeDetail.detail}</div>
+          </div>
+          <div className="desk-chip mono self-start lg:self-auto">
+            {analysis.technical_context.volatility_state || "volatility pending"}
+          </div>
         </div>
-      ) : null}
-    </>
+      </div>
+    </section>
   );
 }

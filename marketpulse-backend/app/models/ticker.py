@@ -39,6 +39,13 @@ class PriceContext(BaseModel):
 
 
 class TechnicalContext(BaseModel):
+    analysis_timeframe: str = "unknown"
+    data_source_interval: str = ""
+    data_range: str = ""
+    calibration_window: str = ""
+    fast_indicator_label: str = ""
+    medium_indicator_label: str = ""
+    slow_indicator_label: str = ""
     trend_short: str = "unknown"
     trend_medium: str = "unknown"
     price_vs_20d: str = "unknown"
@@ -57,6 +64,17 @@ class TechnicalContext(BaseModel):
     stoch_rsi_d: float = 50.0
     support_level: float = 0.0
     resistance_level: float = 0.0
+    support_basis: str = ""
+    resistance_basis: str = ""
+    vwap: float = 0.0
+    atr: float = 0.0
+    range_position_percent: float = 50.0
+    trend_score: int = 0
+    momentum_score: int = 0
+    level_score: int = 0
+    exhaustion_score: int = 0
+    volatility_state: str = "normal"
+    regime_state: str = "range"
     economic_pressure: str = "neutral"
     momentum_state: str = "unknown"
     structure_score: int = 0

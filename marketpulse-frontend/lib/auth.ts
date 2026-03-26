@@ -1,114 +1,125 @@
-export type LocalAccount = {
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
+
+export type AuthUser = {
+  id: number;
   email: string;
-  password: string;
   name: string;
-  role: "admin" | "user";
-  provider: "email" | "google" | "facebook";
+  role: string;
   created_at: string;
 };
 
-const ACCOUNTS_KEY = "marketpulse_accounts_v1";
-const SESSION_KEY = "marketpulse_session_v1";
-
-const DEFAULT_ADMIN: LocalAccount = {
-  email: "admin@marketpulse.dev",
-  password: "Admin@12345",
-  name: "MarketPulse Admin",
-  role: "admin",
-  provider: "email",
-  created_at: new Date("2026-03-25T00:00:00Z").toISOString(),
+export type AuthSession = {
+  token: string;
+  user: AuthUser;
 };
 
-function readAccounts(): LocalAccount[] {
-  if (typeof window === "undefined") return [DEFAULT_ADMIN];
-  const raw = window.localStorage.getItem(ACCOUNTS_KEY);
-  if (!raw) return [DEFAULT_ADMIN];
+const SESSION_KEY = "marketpulse_session_v2";
+
+function readStoredSession(): AuthSession | null {
+  if (typeof window === "undefined") return null;
+  const raw = window.localStorage.getItem(SESSION_KEY);
+  if (!raw) return null;
 
   try {
-    const parsed = JSON.parse(raw) as LocalAccount[];
-    if (!Array.isArray(parsed)) return [DEFAULT_ADMIN];
-    return parsed;
+    return JSON.parse(raw) as AuthSession;
   } catch {
-    return [DEFAULT_ADMIN];
+    window.localStorage.removeItem(SESSION_KEY);
+    return null;
   }
 }
 
-function writeAccounts(accounts: LocalAccount[]) {
+function storeSession(session: AuthSession | null) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+
+  if (!session) {
+    window.localStorage.removeItem(SESSION_KEY);
+    return;
+  }
+
+  window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
 }
 
-export function ensureAdminAccount() {
-  const accounts = readAccounts();
-  if (accounts.some((item) => item.email.toLowerCase() === DEFAULT_ADMIN.email.toLowerCase())) {
-    return DEFAULT_ADMIN;
+async function apiRequest<T>(path: string, init?: RequestInit, token?: string): Promise<T> {
+  const headers = new Headers(init?.headers);
+  headers.set("Content-Type", "application/json");
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const next = [DEFAULT_ADMIN, ...accounts];
-  writeAccounts(next);
-  return DEFAULT_ADMIN;
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...init,
+    headers,
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    let message = text;
+
+    try {
+      const parsed = JSON.parse(text) as { detail?: string };
+      message = parsed.detail || text;
+    } catch {
+      message = text;
+    }
+
+    throw new Error(message || `Request failed: ${res.status}`);
+  }
+
+  return res.json() as Promise<T>;
 }
 
-export function registerWithEmail(params: { name: string; email: string; password: string }) {
-  const accounts = readAccounts();
-  const email = params.email.trim().toLowerCase();
-
-  if (accounts.some((item) => item.email.toLowerCase() === email)) {
-    throw new Error("An account with that email already exists.");
-  }
-
-  const account: LocalAccount = {
-    email,
-    password: params.password,
-    name: params.name.trim(),
-    role: "user",
-    provider: "email",
-    created_at: new Date().toISOString(),
-  };
-
-  const next = [account, ...accounts];
-  writeAccounts(next);
-  return account;
+export function getStoredSession(): AuthSession | null {
+  return readStoredSession();
 }
 
-export function loginWithEmail(email: string, password: string) {
-  const accounts = readAccounts();
-  const account = accounts.find(
-    (item) => item.email.toLowerCase() === email.trim().toLowerCase() && item.password === password
-  );
-
-  if (!account) {
-    throw new Error("Invalid credentials.");
-  }
-
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(SESSION_KEY, JSON.stringify(account));
-  }
-
-  return account;
+export async function registerWithEmail(params: {
+  name: string;
+  email: string;
+  password: string;
+}): Promise<AuthSession> {
+  const session = await apiRequest<AuthSession>("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify(params),
+  });
+  storeSession(session);
+  return session;
 }
 
-export function socialLogin(provider: "google" | "facebook") {
-  const accounts = readAccounts();
-  const email = `${provider}.demo@marketpulse.dev`;
-  const existing = accounts.find((item) => item.email === email);
+export async function loginWithEmail(email: string, password: string): Promise<AuthSession> {
+  const session = await apiRequest<AuthSession>("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+  storeSession(session);
+  return session;
+}
 
-  const account: LocalAccount = existing || {
-    email,
-    password: "",
-    name: provider === "google" ? "Google Demo User" : "Facebook Demo User",
-    role: "user",
-    provider,
-    created_at: new Date().toISOString(),
-  };
+export async function restoreSession(): Promise<AuthSession | null> {
+  const stored = readStoredSession();
+  if (!stored?.token) return null;
 
-  if (!existing) {
-    writeAccounts([account, ...accounts]);
+  try {
+    const user = await apiRequest<AuthUser>("/api/auth/me", { method: "GET" }, stored.token);
+    const session = { token: stored.token, user };
+    storeSession(session);
+    return session;
+  } catch {
+    storeSession(null);
+    return null;
   }
+}
 
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(SESSION_KEY, JSON.stringify(account));
+export async function logoutUser(): Promise<void> {
+  const stored = readStoredSession();
+
+  try {
+    if (stored?.token) {
+      await apiRequest<{ status: string }>("/api/auth/logout", { method: "POST", body: JSON.stringify({}) }, stored.token);
+    }
+  } catch {
+    // Always clear the local session even if the backend token is already gone.
+  } finally {
+    storeSession(null);
   }
-
-  return account;
 }

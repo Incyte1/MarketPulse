@@ -1,11 +1,19 @@
 import pandas as pd
 import requests
 from app.core.config import settings
+from app.clients.yahoo_client import fetch_intraday_history_from_yahoo
 
 
 def fetch_intraday_history(symbol: str, interval: str, outputsize: int = 1000) -> pd.DataFrame:
+    errors: list[str] = []
+
+    try:
+        return fetch_intraday_history_from_yahoo(symbol, interval=interval, outputsize=outputsize)
+    except Exception as exc:
+        errors.append(f"Yahoo Finance: {exc}")
+
     if not settings.twelve_data_api_key:
-        raise ValueError("TWELVE_DATA_API_KEY is missing")
+        raise ValueError(" | ".join(errors + ["TWELVE_DATA_API_KEY is missing"]))
 
     url = "https://api.twelvedata.com/time_series"
     params = {
@@ -18,33 +26,37 @@ def fetch_intraday_history(symbol: str, interval: str, outputsize: int = 1000) -
         "order": "ASC",
     }
 
-    response = requests.get(url, params=params, timeout=30)
-    response.raise_for_status()
-    data = response.json()
+    try:
+        response = requests.get(url, params=params, timeout=30)
+        response.raise_for_status()
+        data = response.json()
 
-    if data.get("status") == "error":
-        raise RuntimeError(data.get("message", "Unknown Twelve Data error"))
+        if data.get("status") == "error":
+            raise RuntimeError(data.get("message", "Unknown Twelve Data error"))
 
-    values = data.get("values")
-    if not values:
-        raise ValueError(f"No intraday data returned for {symbol}")
+        values = data.get("values")
+        if not values:
+            raise ValueError(f"No intraday data returned for {symbol}")
 
-    parsed = []
-    for item in values:
-        try:
-            parsed.append({
-                "datetime": pd.to_datetime(item["datetime"]),
-                "open": float(item["open"]),
-                "high": float(item["high"]),
-                "low": float(item["low"]),
-                "close": float(item["close"]),
-                "volume": float(item.get("volume", 0) or 0),
-            })
-        except (ValueError, KeyError, TypeError):
-            continue
+        parsed = []
+        for item in values:
+            try:
+                parsed.append({
+                    "datetime": pd.to_datetime(item["datetime"]),
+                    "open": float(item["open"]),
+                    "high": float(item["high"]),
+                    "low": float(item["low"]),
+                    "close": float(item["close"]),
+                    "volume": float(item.get("volume", 0) or 0),
+                })
+            except (ValueError, KeyError, TypeError):
+                continue
 
-    df = pd.DataFrame(parsed)
-    if df.empty:
-        raise ValueError(f"No usable intraday data returned for {symbol}")
+        df = pd.DataFrame(parsed)
+        if df.empty:
+            raise ValueError(f"No usable intraday data returned for {symbol}")
 
-    return df.sort_values("datetime").reset_index(drop=True)
+        return df.sort_values("datetime").reset_index(drop=True)
+    except Exception as exc:
+        errors.append(f"Twelve Data: {exc}")
+        raise ValueError(" | ".join(errors))

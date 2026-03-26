@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 92" fill="none">
+  <defs>
+    <linearGradient id="unveniGradient" x1="12" y1="46" x2="418" y2="46" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E52F2D" />
+      <stop offset="0.48" stop-color="#C86B63" />
+      <stop offset="1" stop-color="#B5AEA3" />
+    </linearGradient>
+    <mask id="unveniMask">
+      <rect width="430" height="92" fill="black" />
+      <path
+        d="M14 16h20v41c0 8 3 12 11 12 8 0 12-4 12-12V16h20v43c0 10-3 18-10 24-6 6-14 9-24 9s-18-3-24-9C17 77 14 69 14 59V16zm72 0h18l34 41V16h20v60h-18l-34-41v41H86V16zm92 0h52v16h-31v8h28v14h-28v22h-21V16zm62 0h52v15h-31v8h28v14h-28v8h32v15h-53V16zm66 0h18l34 41V16h20v60h-18l-34-41v41h-20V16zm84 0h21v60h-21V16z"
+        fill="white"
+      />
+      <polygon points="150,18 166,18 187,76 171,76" fill="black" />
+      <polygon points="309,18 325,18 346,76 330,76" fill="black" />
+      <polygon points="112,18 126,18 146,43 132,43" fill="black" />
+      <polygon points="286,18 300,18 320,43 306,43" fill="black" />
+      <polygon points="214,31 225,31 235,47 224,47" fill="black" />
+    </mask>
+  </defs>
+  <rect width="430" height="92" fill="url(#unveniGradient)" mask="url(#unveniMask)" />
+</svg>

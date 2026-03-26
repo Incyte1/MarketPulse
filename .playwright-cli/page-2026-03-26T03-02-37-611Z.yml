@@ -1,0 +1,508 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - link "Unveni logo Market Intelligence Platform" [ref=e7] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e8]:
+              - img "Unveni logo" [ref=e9]
+              - generic [ref=e10]: Market Intelligence Platform
+          - generic [ref=e177]:
+            - button "Markets" [ref=e178] [cursor=pointer]
+            - button "Research" [ref=e179] [cursor=pointer]
+            - button "Workspace" [ref=e180] [cursor=pointer]
+        - generic [ref=e11]:
+          - textbox "Search ticker, memo, or workspace" [ref=e12]
+          - button "Open" [ref=e13] [cursor=pointer]
+        - generic [ref=e14]:
+          - generic [ref=e15]:
+            - button "Short-Term" [ref=e16] [cursor=pointer]
+            - button "Long-Term" [ref=e17] [cursor=pointer]
+          - generic [ref=e18]:
+            - link "Login" [ref=e19] [cursor=pointer]:
+              - /url: /login
+            - link "Create Account" [ref=e20] [cursor=pointer]:
+              - /url: /register
+      - generic [ref=e21]:
+        - generic [ref=e22]: SPY
+        - generic [ref=e23]: 1D / 1H execution
+        - generic [ref=e24]: CLOSED
+        - generic [ref=e25]: S/R 654.24 / 660.89
+        - generic [ref=e26]: Driver macro catalyst
+        - generic [ref=e27]: 6 live catalysts
+    - generic [ref=e28]:
+      - complementary [ref=e29]:
+        - generic [ref=e30]:
+          - generic [ref=e31]:
+            - generic [ref=e32]:
+              - generic [ref=e33]:
+                - generic [ref=e34]: Coverage Universe
+                - generic [ref=e35]: Review rail
+              - generic [ref=e36]: 1D / 1H
+            - generic [ref=e37]:
+              - generic [ref=e38]:
+                - generic [ref=e39]: Active
+                - generic [ref=e40]: SPY
+              - generic [ref=e41]:
+                - generic [ref=e42]: Universe
+                - generic [ref=e43]: "40"
+            - generic [ref=e44]:
+              - text: Search Ticker
+              - generic [ref=e45]:
+                - textbox "Search Ticker" [ref=e46]:
+                  - /placeholder: SPY
+                - button "Go" [ref=e47] [cursor=pointer]
+          - generic [ref=e48]:
+            - generic [ref=e49]:
+              - button "Core" [ref=e50] [cursor=pointer]
+              - button "Heat" [ref=e51] [cursor=pointer]
+              - button "News" [ref=e52] [cursor=pointer]
+              - button "ETFs" [ref=e53] [cursor=pointer]
+              - button "Tech" [ref=e54] [cursor=pointer]
+              - button "All" [ref=e55] [cursor=pointer]
+            - generic [ref=e56]:
+              - generic [ref=e57]:
+                - generic [ref=e58]: Core
+                - generic [ref=e59]: Primary review queue
+              - generic [ref=e60]: "5"
+            - generic [ref=e61]:
+              - button "SPY Active ST" [ref=e62] [cursor=pointer]:
+                - generic [ref=e65]:
+                  - generic [ref=e66]: SPY
+                  - generic [ref=e67]: Active
+                - generic [ref=e68]: ST
+              - button "QQQ Open ST" [ref=e69] [cursor=pointer]:
+                - generic [ref=e72]:
+                  - generic [ref=e73]: QQQ
+                  - generic [ref=e74]: Open
+                - generic [ref=e75]: ST
+              - button "AAPL Open ST" [ref=e76] [cursor=pointer]:
+                - generic [ref=e79]:
+                  - generic [ref=e80]: AAPL
+                  - generic [ref=e81]: Open
+                - generic [ref=e82]: ST
+              - button "NVDA Open ST" [ref=e83] [cursor=pointer]:
+                - generic [ref=e86]:
+                  - generic [ref=e87]: NVDA
+                  - generic [ref=e88]: Open
+                - generic [ref=e89]: ST
+              - button "TSLA Open ST" [ref=e90] [cursor=pointer]:
+                - generic [ref=e93]:
+                  - generic [ref=e94]: TSLA
+                  - generic [ref=e95]: Open
+                - generic [ref=e96]: ST
+      - main [ref=e98]:
+        - generic [ref=e181]:
+          - generic [ref=e182]:
+            - generic [ref=e183]:
+              - generic [ref=e184]: Decision Tape
+              - generic [ref=e185]: Fast desk readouts for the active symbol and horizon.
+            - generic [ref=e186]:
+              - generic [ref=e187]: 1D
+              - generic [ref=e188]: 1h bars
+              - generic [ref=e189]: compression
+          - generic [ref=e190]:
+            - button "Bias Active NEUTRAL 7/7 score" [ref=e191] [cursor=pointer]:
+              - generic [ref=e192]:
+                - generic [ref=e193]: Bias
+                - generic [ref=e194]: Active
+              - generic [ref=e195]: NEUTRAL
+              - generic [ref=e196]: 7/7 score
+            - button "Conviction Open Low 42/100 confidence" [ref=e197] [cursor=pointer]:
+              - generic [ref=e198]:
+                - generic [ref=e199]: Conviction
+                - generic [ref=e200]: Open
+              - generic [ref=e201]: Low
+              - generic [ref=e202]: 42/100 confidence
+            - button "Driver Open macro catalyst 2 secondary drivers" [ref=e203] [cursor=pointer]:
+              - generic [ref=e204]:
+                - generic [ref=e205]: Driver
+                - generic [ref=e206]: Open
+              - generic [ref=e207]: macro catalyst
+              - generic [ref=e208]: 2 secondary drivers
+            - button "Plan Open neutral Execution mode" [ref=e209] [cursor=pointer]:
+              - generic [ref=e210]:
+                - generic [ref=e211]: Plan
+                - generic [ref=e212]: Open
+              - generic [ref=e213]: neutral
+              - generic [ref=e214]: Execution mode
+          - generic [ref=e216]:
+            - generic [ref=e217]:
+              - generic [ref=e218]: Bias
+              - generic [ref=e219]: Trend bullish, momentum positive, and structure 3 are driving the active bias.
+            - generic [ref=e220]: compressed
+        - generic [ref=e99]:
+          - generic [ref=e101]:
+            - generic [ref=e102]:
+              - generic [ref=e103]:
+                - generic [ref=e104]: Execution board
+                - generic [ref=e105]: Engine 1D / 1h
+                - generic [ref=e106]: Workspace 30m
+                - generic [ref=e107]: AMEX:SPY
+              - generic [ref=e108]:
+                - generic [ref=e109]:
+                  - generic [ref=e110]: SPY
+                  - generic [ref=e111]: SPDR S&P 500 ETF Trust
+                - generic [ref=e221]:
+                  - generic [ref=e222]: $656.82
+                  - generic [ref=e223]: +0.00%
+              - generic [ref=e112]:
+                - generic [ref=e113]: SPDR S&P 500 ETF Trust currently has a neutral analytical read. The system sees mixed evidence, which usually means patience is better than forcing a strong directional view. Current regime is compression with compressed volatility.
+                - generic [ref=e114]:
+                  - button "1m" [ref=e115] [cursor=pointer]
+                  - button "5m" [ref=e116] [cursor=pointer]
+                  - button "15m" [ref=e117] [cursor=pointer]
+                  - button "30m" [ref=e118] [cursor=pointer]
+                  - button "1h" [ref=e119] [cursor=pointer]
+                  - button "4h" [ref=e120] [cursor=pointer]
+            - generic [ref=e121]:
+              - generic [ref=e122]:
+                - generic [ref=e123]: Bias
+                - generic [ref=e124]: NEUTRAL
+              - generic [ref=e125]:
+                - generic [ref=e126]: Conviction
+                - generic [ref=e127]: Low
+              - generic [ref=e128]:
+                - generic [ref=e129]: Driver
+                - generic [ref=e130]: macro catalyst
+              - generic [ref=e131]:
+                - generic [ref=e132]: Levels
+                - generic [ref=e133]: 654.24 / 660.89
+          - generic [ref=e134]: Execution levels are computed on isolated 1h bars. The chart workspace stays flexible for faster markup.
+          - generic [ref=e135]:
+            - iframe [ref=e224]:
+              - generic [ref=f1e2]:
+                - toolbar [ref=f1e6]:
+                  - generic [ref=f1e10]:
+                    - generic [ref=f1e11]:
+                      - button "Symbol Search" [ref=f1e12]:
+                        - img [ref=f1e13]:
+                          - img [ref=f1e14]
+                        - generic [ref=f1e16]: SPY
+                      - button "Compare or Add Symbol" [ref=f1e17]:
+                        - img [ref=f1e18]:
+                          - img [ref=f1e19]
+                    - generic [ref=f1e25]:
+                      - radiogroup [ref=f1e26]:
+                        - radio "1 minute" [ref=f1e27]:
+                          - generic [ref=f1e29]: 1m
+                        - radio "30 minutes" [checked] [ref=f1e30]:
+                          - generic [ref=f1e32]: 30m
+                        - radio "1 hour" [ref=f1e33]:
+                          - generic [ref=f1e35]: 1h
+                      - button "Chart interval" [ref=f1e36]:
+                        - img [ref=f1e39]:
+                          - img [ref=f1e40]
+                    - generic [ref=f1e45]:
+                      - radiogroup [ref=f1e46]:
+                        - radio "Bars" [ref=f1e47]:
+                          - img [ref=f1e48]:
+                            - img [ref=f1e49]
+                        - radio "Candles" [checked] [ref=f1e51]:
+                          - img [ref=f1e52]:
+                            - img [ref=f1e53]
+                        - radio "Area" [ref=f1e58]:
+                          - img [ref=f1e59]:
+                            - img [ref=f1e60]
+                      - button "Bar's style" [ref=f1e62]:
+                        - img [ref=f1e65]:
+                          - img [ref=f1e66]
+                    - button "Indicators, metrics, and strategies" [ref=f1e72]:
+                      - img [ref=f1e73]:
+                        - img [ref=f1e74]
+                      - generic [ref=f1e77]: Indicators
+                    - button "Take a snapshot" [ref=f1e80]:
+                      - img [ref=f1e82]:
+                        - img [ref=f1e83]
+                - toolbar [ref=f1e87]:
+                  - generic [ref=f1e91]:
+                    - generic [ref=f1e92]:
+                      - generic [ref=f1e95]:
+                        - button "Cross" [ref=f1e97]:
+                          - img [ref=f1e98]:
+                            - img [ref=f1e99]
+                        - button "Cursors" [pressed] [ref=f1e103]:
+                          - img [ref=f1e104]:
+                            - img [ref=f1e105]
+                      - generic [ref=f1e109]:
+                        - button "Trendline" [ref=f1e111]:
+                          - img [ref=f1e112]:
+                            - img [ref=f1e113]
+                        - button "Trend tools" [ref=f1e117]:
+                          - img [ref=f1e118]:
+                            - img [ref=f1e119]
+                      - generic [ref=f1e123]:
+                        - button "Fib retracement" [ref=f1e125]:
+                          - img [ref=f1e126]:
+                            - img [ref=f1e127]
+                        - button "Gann and Fibonacci tools" [ref=f1e134]:
+                          - img [ref=f1e135]:
+                            - img [ref=f1e136]
+                      - generic [ref=f1e140]:
+                        - button "XABCD pattern" [ref=f1e142]:
+                          - img [ref=f1e143]:
+                            - img [ref=f1e144]
+                        - button "Patterns" [ref=f1e148]:
+                          - img [ref=f1e149]:
+                            - img [ref=f1e150]
+                      - generic [ref=f1e154]:
+                        - button "Long position" [ref=f1e156]:
+                          - img [ref=f1e157]:
+                            - img [ref=f1e158]
+                        - button "Forecasting and measurement tools" [ref=f1e161]:
+                          - img [ref=f1e162]:
+                            - img [ref=f1e163]
+                      - generic [ref=f1e167]:
+                        - button "Brush" [ref=f1e169]:
+                          - img [ref=f1e170]:
+                            - img [ref=f1e171]
+                        - button "Geometric shapes" [ref=f1e175]:
+                          - img [ref=f1e176]:
+                            - img [ref=f1e177]
+                      - generic [ref=f1e181]:
+                        - button "Text" [ref=f1e183]:
+                          - img [ref=f1e184]:
+                            - img [ref=f1e185]
+                        - button "Annotation tools" [ref=f1e187]:
+                          - img [ref=f1e188]:
+                            - img [ref=f1e189]
+                      - generic [ref=f1e192]:
+                        - button "Icon" [ref=f1e194]:
+                          - img [ref=f1e195]:
+                            - img [ref=f1e196]
+                        - button "Icons" [ref=f1e198]:
+                          - img [ref=f1e199]:
+                            - img [ref=f1e200]
+                    - generic [ref=f1e202]:
+                      - button "Measure" [ref=f1e203]:
+                        - img [ref=f1e204]:
+                          - img [ref=f1e205]
+                      - button "Zoom in" [ref=f1e207]:
+                        - img [ref=f1e208]:
+                          - img [ref=f1e209]
+                    - generic [ref=f1e217]:
+                      - button "Magnet mode snaps drawings placed near price bars to the closest OHLC value" [ref=f1e219]:
+                        - img [ref=f1e220]:
+                          - img [ref=f1e221]
+                      - button "Magnets" [ref=f1e225]:
+                        - img [ref=f1e226]:
+                          - img [ref=f1e227]
+                - generic [ref=f1e230]:
+                  - 'region "Chart #1" [ref=f1e233]':
+                    - generic [ref=f1e237]:
+                      - generic:
+                        - generic:
+                          - toolbar:
+                            - generic:
+                              - generic [ref=f1e238]:
+                                - generic "Change symbol" [ref=f1e239]:
+                                  - generic [ref=f1e240]:
+                                    - img [ref=f1e242]
+                                    - generic [ref=f1e243]: S
+                                  - button "Change symbol" [ref=f1e244]: SPDR S&P 500 ETF TRUST
+                                - generic "Change interval" [ref=f1e245]:
+                                  - text: ·
+                                  - button "Change interval" [ref=f1e246]: "30"
+                                - generic [ref=f1e247]:
+                                  - text: ·
+                                  - generic [ref=f1e248]: Cboe One
+                              - generic:
+                                - generic:
+                                  - button "More":
+                                    - generic:
+                                      - img
+                              - button "Market closed · Data is delayed" [ref=f1e250]:
+                                - img [ref=f1e251]:
+                                  - img [ref=f1e252]
+                                - img [ref=f1e254]:
+                                  - img [ref=f1e255]
+                            - generic [ref=f1e258]:
+                              - generic [ref=f1e259]:
+                                - generic [ref=f1e260]: O
+                                - generic [ref=f1e261]: "656.50"
+                              - generic [ref=f1e262]:
+                                - generic [ref=f1e263]: H
+                                - generic [ref=f1e264]: "657.06"
+                              - generic [ref=f1e265]:
+                                - generic [ref=f1e266]: L
+                                - generic [ref=f1e267]: "655.76"
+                              - generic [ref=f1e268]:
+                                - generic [ref=f1e269]: C
+                                - generic [ref=f1e270]: "656.72"
+                              - generic [ref=f1e272]: +0.22 (+0.03%)
+                        - generic:
+                          - button "Hide indicators legend" [ref=f1e273]:
+                            - img [ref=f1e275]
+                          - generic:
+                            - toolbar:
+                              - generic:
+                                - generic [ref=f1e277]:
+                                  - generic [ref=f1e279]: VWAP
+                                  - generic [ref=f1e280]:
+                                    - generic "Anchor Period" [ref=f1e281]:
+                                      - generic [ref=f1e282]: Session
+                                    - generic "Source" [ref=f1e283]:
+                                      - generic [ref=f1e284]: hlc3
+                                - generic:
+                                  - generic:
+                                    - button "Hide":
+                                      - generic:
+                                        - img
+                                    - button "Settings":
+                                      - generic:
+                                        - img
+                                    - button "Remove":
+                                      - generic:
+                                        - img
+                                    - button "More":
+                                      - generic:
+                                        - img
+                              - generic "VWAP" [ref=f1e288]: "657.46"
+                            - toolbar:
+                              - generic:
+                                - generic [ref=f1e289]:
+                                  - generic "Moving Average" [ref=f1e290]:
+                                    - generic [ref=f1e291]: MA
+                                  - generic [ref=f1e292]:
+                                    - generic "Length" [ref=f1e293]:
+                                      - generic [ref=f1e294]: "9"
+                                    - generic "Source" [ref=f1e295]:
+                                      - generic [ref=f1e296]: close
+                                - generic:
+                                  - generic:
+                                    - button "Hide":
+                                      - generic:
+                                        - img
+                                    - button "Settings":
+                                      - generic:
+                                        - img
+                                    - button "Remove":
+                                      - generic:
+                                        - img
+                                    - button "More":
+                                      - generic:
+                                        - img
+                              - generic "MA" [ref=f1e300]: "657.27"
+                            - toolbar:
+                              - generic:
+                                - generic "Volume" [ref=f1e302]:
+                                  - generic [ref=f1e303]: Vol
+                                - generic:
+                                  - generic:
+                                    - button "Hide":
+                                      - generic:
+                                        - img
+                                    - button "Settings":
+                                      - generic:
+                                        - img
+                                    - button "Remove":
+                                      - generic:
+                                        - img
+                                    - button "More":
+                                      - generic:
+                                        - img
+                              - generic "Volume" [ref=f1e307]: 1.05 M
+                      - generic "Chart for BATS_DLY:SPY, 30 minutes" [ref=f1e309]
+                  - toolbar [ref=f1e323]:
+                    - generic [ref=f1e326]:
+                      - button "1 day in 1 minute intervals" [ref=f1e327]:
+                        - generic [ref=f1e328]: 1D
+                      - button "5 days in 5 minutes intervals" [ref=f1e329]:
+                        - generic [ref=f1e330]: 5D
+                      - button "1 month in 30 minutes intervals" [ref=f1e331]:
+                        - generic [ref=f1e332]: 1M
+                      - button "3 months in 1 hour intervals" [ref=f1e333]:
+                        - generic [ref=f1e334]: 3M
+                      - button "6 months in 2 hours intervals" [ref=f1e335]:
+                        - generic [ref=f1e336]: 6M
+                      - button "Year to day in 1 day intervals" [ref=f1e337]:
+                        - generic [ref=f1e338]: YTD
+                      - button "1 year in 1 day intervals" [ref=f1e339]:
+                        - generic [ref=f1e340]: 1Y
+                      - button "5 years in 1 week intervals" [ref=f1e341]:
+                        - generic [ref=f1e342]: 5Y
+                      - button "All data in 1 month intervals" [ref=f1e343]:
+                        - generic [ref=f1e344]: All
+                    - generic [ref=f1e345]:
+                      - button "22:02:36 UTC-5" [disabled] [ref=f1e355]:
+                        - generic [ref=f1e349]: 22:02:36 UTC-5
+                      - button "Adjust data for dividends" [ref=f1e353]:
+                        - generic [ref=f1e354]: ADJ
+            - generic:
+              - generic: mixed or rangebound
+              - generic: Engine 1h bars
+              - generic: 5-hour EMA active
+          - generic [ref=e137]:
+            - generic [ref=e138]:
+              - generic [ref=e139]: Trade Framing
+              - generic [ref=e140]: Stay selective and wait for a cleaner short-term trigger before pressing directional exposure.
+            - generic [ref=e141]:
+              - generic [ref=e142]: Technical Basis
+              - generic [ref=e143]:
+                - text: 1-day hourly swing low
+                - text: 1-day hourly swing high
+            - generic [ref=e144]:
+              - generic [ref=e145]: Engine Status
+              - generic [ref=e146]:
+                - text: 4D calibration built from 1-hour bars
+                - text: VWAP 657.47 | ATR 2.75 | Cached candles 0
+      - generic [ref=e148]:
+        - generic [ref=e225]:
+          - generic [ref=e226]:
+            - generic [ref=e227]:
+              - generic [ref=e228]: Research Terminal
+              - generic [ref=e229]: Catalysts, thesis, and context
+            - generic [ref=e230]:
+              - button "Focus" [ref=e231] [cursor=pointer]
+              - button "Ticker Catalysts" [ref=e232] [cursor=pointer]
+              - button "Macro Drivers" [ref=e233] [cursor=pointer]
+              - button "Trade Context" [ref=e234] [cursor=pointer]
+          - generic [ref=e235]:
+            - generic:
+              - generic [ref=e236]:
+                - generic: Professional Read
+                - generic: "SPDR S&P 500 ETF Trust currently has a mixed or neutral setup. The main active driver is macro catalyst, and the lead catalyst is: IVV vs. SPY: These Top S&P 500 ETFs Are Not the Same. Explore how two popular funds tracking the same index differ in cost, yield, and structure. On the 1-day range built from 1-hour bars read, price is below the 5-hour EMA, trend score is 4, momentum score is 0, and the active range is 654.24 to 660.89."
+                - generic [ref=e237]:
+                  - generic: Plain English
+                  - generic: "On the 1-day range with 1-hour bars chart, SPY still looks mixed rather than cleanly directional. The biggest thing moving the story right now is IVV vs. SPY: These Top S&P 500 ETFs Are Not the Same. Price is below the 5-hour EMA, and the working range is 654.24 to 660.89, so this is about near-term follow-through instead of a big long-term thesis. Watch this next: Confirmation only improves if SPY resolves decisively instead of chopping around the headline. Market check: Treat it as real only if SPY resolves outside the 654.24 to 660.89 range on a hourly-closing basis.."
+              - generic [ref=e238]:
+                - generic [ref=e239]:
+                  - generic [ref=e241]: Setup
+                  - generic [ref=e242]: Conditions are mixed
+                  - generic [ref=e243]: SPDR S&P 500 ETF Trust currently has a neutral analytical read. The system sees mixed evidence, which usually means patience is better than forcing a strong directional view. Current regime is compression with compressed volatility.
+                - generic [ref=e244]:
+                  - generic [ref=e246]: Stance
+                  - generic [ref=e247]: Neutral
+                  - generic [ref=e248]: Stay selective and wait for a cleaner short-term trigger before pressing directional exposure.
+                - generic [ref=e249]:
+                  - generic [ref=e251]: Ticker
+                  - generic [ref=e252]: "IVV vs. SPY: These Top S&P 500 ETFs Are Not the Same"
+                  - generic [ref=e253]: "IVV vs. SPY: These Top S&P 500 ETFs Are Not the Same. Explore how two popular funds tracking the same index differ in cost, yield, and structure."
+                - generic [ref=e254]:
+                  - generic [ref=e256]: Macro
+                  - generic [ref=e257]: Oil prices drop 2% as Iran considers US proposal to end war - Reuters
+                  - generic [ref=e258]: Oil prices drop 2% as Iran considers US proposal to end war - Reuters
+        - complementary [ref=e150]:
+          - generic [ref=e151]:
+            - generic [ref=e152]: Workflow Layer
+            - generic [ref=e153]: Workflow dock
+            - paragraph [ref=e154]: Sign in to turn the live market surface into a persistent desk with saved workspaces, alerts, and source-linked memo flow.
+            - generic [ref=e155]:
+              - generic [ref=e156]:
+                - generic [ref=e157]: Saved workspaces
+                - generic [ref=e158]: Restore active symbol, horizon, and memo context.
+              - generic [ref=e159]:
+                - generic [ref=e160]: Alert rules
+                - generic [ref=e161]: Save breakouts, breakdowns, and VWAP reclaim levels.
+              - generic [ref=e162]:
+                - generic [ref=e163]: Source-linked memos
+                - generic [ref=e164]: Build a research note with linked catalysts instead of loose copy.
+            - generic [ref=e165]:
+              - link "Login" [ref=e166] [cursor=pointer]:
+                - /url: /login
+              - link "Create Unveni Account" [ref=e167] [cursor=pointer]:
+                - /url: /register
+  - button "Open Next.js Dev Tools" [ref=e173] [cursor=pointer]:
+    - img [ref=e174]
+  - alert [ref=e259]

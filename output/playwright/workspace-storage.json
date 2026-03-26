@@ -1,0 +1,16 @@
+{
+    "cookies":  [
+
+                ],
+    "origins":  [
+                    {
+                        "localStorage":  [
+                                             {
+                                                 "value":  "{\"token\":\"32MPAEJhWI_eTaTw-MgHGAkYrWzhADh-L6ztkgIOcl8\",\"user\":{\"id\":4,\"email\":\"codex.responsive.1774500650201@example.com\",\"name\":\"Codex Responsive\",\"role\":\"user\",\"created_at\":\"2026-03-26T04:50:50.338750+00:00\"}}",
+                                                 "name":  "marketpulse_session_v2"
+                                             }
+                                         ],
+                        "origin":  "http://127.0.0.1:3000"
+                    }
+                ]
+}

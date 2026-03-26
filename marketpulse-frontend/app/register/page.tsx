@@ -1,95 +1,194 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ensureAdminAccount, registerWithEmail, socialLogin } from "@/lib/auth";
+import AuthShell from "@/components/AuthShell";
+import { registerWithEmail, restoreSession } from "@/lib/auth";
+import { brand } from "@/lib/brand";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    ensureAdminAccount();
-  }, []);
+    let active = true;
+
+    restoreSession()
+      .then((session) => {
+        if (active && session) {
+          router.replace("/workspace");
+        }
+      })
+      .catch(() => null);
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   return (
-    <main className="min-h-screen bg-[#070b14] px-6 py-10 text-white">
-      <div className="mx-auto max-w-md rounded-3xl border border-white/10 bg-[#0b1323] p-8 shadow-2xl shadow-black/40">
-        <div className="text-2xl font-semibold">Create your MarketPulse account</div>
-        <p className="mt-2 text-sm text-slate-400">
-          Start with email or continue with your social login.
-        </p>
-
-        <div className="mt-6 space-y-3">
-          <button
-            className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-left text-sm hover:bg-white/10"
-            onClick={() => {
-              socialLogin("google");
-              router.push("/");
-            }}
-          >
-            Sign up with Google
-          </button>
-          <button
-            className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-left text-sm hover:bg-white/10"
-            onClick={() => {
-              socialLogin("facebook");
-              router.push("/");
-            }}
-          >
-            Sign up with Facebook
-          </button>
+    <AuthShell
+      eyebrow="New Workspace"
+      title={`Create a real ${brand.name} account.`}
+      subtitle={brand.registerPrompt}
+      altHref="/login"
+      altLabel="Log in"
+      altPrompt="Already have access?"
+    >
+      <div>
+        <div className="eyebrow">Account Setup</div>
+        <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
+          Open your workspace.
         </div>
+        <p className="mt-3 text-sm leading-6 text-slate-300">
+          This is a real account flow backed by the API, not a local-only demo login.
+        </p>
+      </div>
 
-        <div className="my-5 border-t border-white/10" />
+      <div className="mt-4 flex flex-wrap gap-2">
+        <span className="desk-chip mono">1 Profile</span>
+        <span className="desk-chip mono">2 Security</span>
+        <span className="desk-chip mono">3 Workspace</span>
+      </div>
 
-        <form
-          className="space-y-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setError(null);
-            try {
-              registerWithEmail({ name, email, password });
-              router.push("/login");
-            } catch (err) {
-              setError(err instanceof Error ? err.message : "Registration failed.");
-            }
-          }}
-        >
+      <form
+        className="mt-6 space-y-4"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setError(null);
+
+          const trimmedName = name.trim();
+          const trimmedEmail = email.trim();
+
+          if (!trimmedName) {
+            setError("Full name is required.");
+            return;
+          }
+
+          if (!trimmedEmail) {
+            setError("Email is required.");
+            return;
+          }
+
+          if (password.length < 8) {
+            setError("Password must be at least 8 characters.");
+            return;
+          }
+
+          if (password !== confirmPassword) {
+            setError("Passwords do not match.");
+            return;
+          }
+
+          setLoading(true);
+          try {
+            await registerWithEmail({ name: trimmedName, email: trimmedEmail, password });
+            router.push("/workspace");
+          } catch (err) {
+            setError(err instanceof Error ? err.message : "Registration failed.");
+          } finally {
+            setLoading(false);
+          }
+        }}
+      >
+        <div className="space-y-2">
+          <label className="field-label" htmlFor="name">
+            Full Name
+          </label>
           <input
-            className="w-full rounded-xl border border-white/10 bg-[#050913] px-4 py-3 text-sm outline-none"
-            placeholder="Full name"
+            id="name"
+            className="text-input"
+            placeholder="Morgan Lee"
+            autoComplete="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
+        </div>
+
+        <div className="space-y-2">
+          <label className="field-label" htmlFor="email">
+            Work Email
+          </label>
           <input
-            className="w-full rounded-xl border border-white/10 bg-[#050913] px-4 py-3 text-sm outline-none"
-            placeholder="Email"
+            id="email"
+            className="text-input"
+            placeholder="analyst@firm.com"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <input
-            className="w-full rounded-xl border border-white/10 bg-[#050913] px-4 py-3 text-sm outline-none"
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button className="w-full rounded-xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-black">
-            Create account
-          </button>
-        </form>
-
-        {error ? <div className="mt-3 text-sm text-rose-300">{error}</div> : null}
-
-        <div className="mt-5 text-sm text-slate-400">
-          Already have an account? <Link href="/login" className="text-cyan-300 underline">Log in</Link>
         </div>
-      </div>
-    </main>
+
+        <div className="space-y-2">
+          <label className="field-label" htmlFor="password">
+            Password
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="password"
+              className="text-input"
+              placeholder="At least 8 characters"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              className="action-button-secondary min-w-[82px]"
+              onClick={() => setShowPassword((current) => !current)}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="field-label" htmlFor="confirm-password">
+            Confirm Password
+          </label>
+          <input
+            id="confirm-password"
+            className="text-input"
+            placeholder="Repeat your password"
+            type="password"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
+        </div>
+
+        <div className="grid gap-2 rounded-[18px] border border-white/10 bg-white/[0.025] p-4 text-sm text-slate-300">
+          <div className={password.length >= 8 ? "signal-positive" : "text-slate-400"}>
+            At least 8 characters
+          </div>
+          <div
+            className={
+              confirmPassword.length > 0 && password === confirmPassword
+                ? "signal-positive"
+                : "text-slate-400"
+            }
+          >
+            Passwords match
+          </div>
+        </div>
+
+        {error ? (
+          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-200">
+            {error}
+          </div>
+        ) : null}
+
+        <button className="action-button w-full" disabled={loading}>
+          {loading ? "Creating account..." : "Create account"}
+        </button>
+      </form>
+    </AuthShell>
   );
 }

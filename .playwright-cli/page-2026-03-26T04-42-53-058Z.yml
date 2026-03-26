@@ -1,0 +1,62 @@
+- main [ref=e2]:
+  - generic [ref=e5]:
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - link "Research Operating System Unveni logo" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e11]: Research Operating System
+          - img "Unveni logo" [ref=e12]
+        - generic [ref=e13]: Register
+      - generic [ref=e14]:
+        - generic [ref=e15]: New Workspace
+        - heading "Create a real Unveni account." [level=1] [ref=e16]
+        - paragraph [ref=e17]: Create a persistent Unveni account for a desk-grade workflow backed by the API.
+      - generic [ref=e18]:
+        - generic [ref=e19]:
+          - generic [ref=e20]: "1"
+          - generic [ref=e21]: Separate short-term and long-term engines
+        - generic [ref=e22]:
+          - generic [ref=e23]: "2"
+          - generic [ref=e24]: Catalyst ranking with confirmation and invalidation
+        - generic [ref=e25]:
+          - generic [ref=e26]: "3"
+          - generic [ref=e27]: Saved workspaces, alerts, and memo sync
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]: Secure access
+        - generic [ref=e32]: Workspace authentication
+      - generic [ref=e33]:
+        - generic [ref=e34]: Account Setup
+        - generic [ref=e35]: Open your workspace.
+        - paragraph [ref=e36]: This is a real account flow backed by the API, not a local-only demo login.
+      - generic [ref=e37]:
+        - generic [ref=e38]: 1 Profile
+        - generic [ref=e39]: 2 Security
+        - generic [ref=e40]: 3 Workspace
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - text: Full Name
+          - textbox "Full Name" [ref=e43]:
+            - /placeholder: Morgan Lee
+        - generic [ref=e44]:
+          - text: Work Email
+          - textbox "Work Email" [ref=e45]:
+            - /placeholder: analyst@firm.com
+        - generic [ref=e46]:
+          - text: Password
+          - generic [ref=e47]:
+            - textbox "Password" [ref=e48]:
+              - /placeholder: At least 8 characters
+            - button "Show" [ref=e49] [cursor=pointer]
+        - generic [ref=e50]:
+          - text: Confirm Password
+          - textbox "Confirm Password" [ref=e51]:
+            - /placeholder: Repeat your password
+        - generic [ref=e52]:
+          - generic [ref=e53]: At least 8 characters
+          - generic [ref=e54]: Passwords match
+        - button "Create account" [ref=e55] [cursor=pointer]
+      - generic [ref=e56]:
+        - text: Already have access?
+        - link "Log in" [ref=e57] [cursor=pointer]:
+          - /url: /login

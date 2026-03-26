@@ -1,94 +1,125 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ensureAdminAccount, loginWithEmail, socialLogin } from "@/lib/auth";
+import AuthShell from "@/components/AuthShell";
+import { loginWithEmail, restoreSession } from "@/lib/auth";
+import { brand } from "@/lib/brand";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [adminHint, setAdminHint] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const admin = ensureAdminAccount();
-    setAdminHint(`${admin.email} / ${admin.password}`);
-  }, []);
+    let active = true;
+
+    restoreSession()
+      .then((session) => {
+        if (active && session) {
+          router.replace("/workspace");
+        }
+      })
+      .catch(() => null);
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   return (
-    <main className="min-h-screen bg-[#070b14] px-6 py-10 text-white">
-      <div className="mx-auto max-w-md rounded-3xl border border-white/10 bg-[#0b1323] p-8 shadow-2xl shadow-black/40">
-        <div className="text-2xl font-semibold">Welcome back to MarketPulse</div>
-        <p className="mt-2 text-sm text-slate-400">
-          Professional market intelligence in one place.
-        </p>
-
-        <div className="mt-6 space-y-3">
-          <button
-            className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-left text-sm hover:bg-white/10"
-            onClick={() => {
-              socialLogin("google");
-              router.push("/");
-            }}
-          >
-            Continue with Google
-          </button>
-          <button
-            className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-left text-sm hover:bg-white/10"
-            onClick={() => {
-              socialLogin("facebook");
-              router.push("/");
-            }}
-          >
-            Continue with Facebook
-          </button>
+    <AuthShell
+      eyebrow="Secure Sign-In"
+      title="Sign in and return straight to the desk."
+      subtitle={brand.loginPrompt}
+      altHref="/register"
+      altLabel="Create an account"
+      altPrompt={`New to ${brand.name}?`}
+    >
+      <div>
+        <div className="eyebrow">Welcome Back</div>
+        <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
+          Sign in to continue.
         </div>
+        <p className="mt-3 text-sm leading-6 text-slate-300">
+          Your session is validated against the backend before the workspace opens.
+        </p>
+      </div>
 
-        <div className="my-5 border-t border-white/10" />
+      <div className="mt-4 flex flex-wrap gap-2">
+        <span className="desk-chip mono">Desks</span>
+        <span className="desk-chip mono">Alerts</span>
+        <span className="desk-chip mono">Memo sync</span>
+      </div>
 
-        <form
-          className="space-y-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setError(null);
-            try {
-              loginWithEmail(email, password);
-              router.push("/");
-            } catch (err) {
-              setError(err instanceof Error ? err.message : "Login failed.");
-            }
-          }}
-        >
+      <form
+        className="mt-6 space-y-4"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setError(null);
+          setLoading(true);
+
+          try {
+            await loginWithEmail(email.trim(), password);
+            router.push("/workspace");
+          } catch (err) {
+            setError(err instanceof Error ? err.message : "Login failed.");
+          } finally {
+            setLoading(false);
+          }
+        }}
+      >
+        <div className="space-y-2">
+          <label className="field-label" htmlFor="email">
+            Email
+          </label>
           <input
-            className="w-full rounded-xl border border-white/10 bg-[#050913] px-4 py-3 text-sm outline-none"
-            placeholder="Email"
+            id="email"
+            className="text-input"
+            placeholder="analyst@firm.com"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <input
-            className="w-full rounded-xl border border-white/10 bg-[#050913] px-4 py-3 text-sm outline-none"
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button className="w-full rounded-xl bg-emerald-500 px-4 py-3 text-sm font-semibold text-black">
-            Log in
-          </button>
-        </form>
-
-        {error ? <div className="mt-3 text-sm text-rose-300">{error}</div> : null}
-
-        <div className="mt-5 rounded-xl border border-cyan-500/20 bg-cyan-500/10 p-3 text-xs text-cyan-100">
-          Admin account seeded for you: <span className="font-semibold">{adminHint}</span>
         </div>
 
-        <div className="mt-5 text-sm text-slate-400">
-          New here? <Link href="/register" className="text-cyan-300 underline">Create an account</Link>
+        <div className="space-y-2">
+          <label className="field-label" htmlFor="password">
+            Password
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="password"
+              className="text-input"
+              placeholder="Enter your password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              className="action-button-secondary min-w-[82px]"
+              onClick={() => setShowPassword((current) => !current)}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
         </div>
-      </div>
-    </main>
+
+        {error ? (
+          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-200">
+            {error}
+          </div>
+        ) : null}
+
+        <button className="action-button w-full" disabled={loading}>
+          {loading ? "Signing in..." : "Log in"}
+        </button>
+      </form>
+    </AuthShell>
   );
 }

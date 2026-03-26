@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: unveni-api
+    runtime: python
+    rootDir: marketpulse-backend
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    disk:
+      name: app-data
+      mountPath: /opt/render/project/src/.render-data
+      sizeGB: 5
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DATA_DIR
+        value: /opt/render/project/src/.render-data
+      - key: AUTH_DB_PATH
+        value: marketpulse_auth.db
+      - key: CACHE_DB_PATH
+        value: marketpulse_cache.db
+      - key: OPENAI_NEWS_CACHE_DB
+        value: news_cache.db
+      - key: NEWS_API_KEY
+        sync: false
+      - key: FINNHUB_API_KEY
+        sync: false
+      - key: TWELVE_DATA_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false

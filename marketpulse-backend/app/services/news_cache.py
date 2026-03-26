@@ -71,5 +71,4 @@ class NewsInterpretationCache:
             )
             conn.commit()
 
-
-cache = NewsInterpretationCache(settings.openai_news_cache_db)
+cache = NewsInterpretationCache(str(settings.resolve_data_path(settings.openai_news_cache_db)))

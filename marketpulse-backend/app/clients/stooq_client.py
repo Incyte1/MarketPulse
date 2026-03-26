@@ -6,6 +6,7 @@ import pandas as pd
 import requests
 
 from app.core.config import settings
+from app.clients.yahoo_client import fetch_daily_history_from_yahoo
 
 
 def _normalize_df(df: pd.DataFrame, symbol: str) -> pd.DataFrame:
@@ -81,35 +82,43 @@ def fetch_daily_history_from_twelve_data(symbol: str, outputsize: int = 260) -> 
     return _normalize_df(df, symbol)
 
 
-def fetch_daily_history_from_stooq(symbol: str) -> pd.DataFrame:
+def fetch_daily_history_from_stooq(symbol: str, outputsize: int = 260) -> pd.DataFrame:
     # Stooq often wants US ETF symbols with .us
     stooq_symbol = f"{symbol.lower()}.us"
     url = f"https://stooq.com/q/d/l/?s={stooq_symbol}&i=d"
 
-    response = requests.get(url, timeout=20)
+    response = requests.get(url, timeout=20, headers={"User-Agent": "Mozilla/5.0"})
     response.raise_for_status()
 
     text = response.text.strip()
-    if not text or "No data" in text:
+    if not text or "No data" in text or "Exceeded the daily hits limit" in text:
         raise ValueError(f"No usable Stooq data returned for {symbol}")
 
     df = pd.read_csv(StringIO(text))
     if df.empty:
         raise ValueError(f"No usable Stooq data returned for {symbol}")
 
-    return _normalize_df(df, symbol)
+    normalized = _normalize_df(df, symbol)
+    if outputsize > 0:
+        return normalized.tail(outputsize).reset_index(drop=True)
+    return normalized
 
 
-def fetch_daily_history(symbol: str) -> pd.DataFrame:
+def fetch_daily_history(symbol: str, outputsize: int = 260) -> pd.DataFrame:
     errors: list[str] = []
 
     try:
-        return fetch_daily_history_from_twelve_data(symbol)
+        return fetch_daily_history_from_yahoo(symbol, outputsize=outputsize)
+    except Exception as exc:
+        errors.append(f"Yahoo Finance: {exc}")
+
+    try:
+        return fetch_daily_history_from_twelve_data(symbol, outputsize=outputsize)
     except Exception as exc:
         errors.append(f"Twelve Data: {exc}")
 
     try:
-        return fetch_daily_history_from_stooq(symbol)
+        return fetch_daily_history_from_stooq(symbol, outputsize=outputsize)
     except Exception as exc:
         errors.append(f"Stooq: {exc}")
 
