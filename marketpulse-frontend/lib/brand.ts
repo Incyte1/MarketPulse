@@ -1,18 +1,18 @@
 export const brand = {
   name: "Unveni",
   shortName: "UNV",
-  descriptor: "Research Operating System",
+  descriptor: "Market Intelligence",
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://unveni.com",
-  metaTitle: "Unveni | Research Operating System",
+  metaTitle: "Unveni | Institutional Market Review Without Terminal Bloat",
   metaDescription:
-    "Multi-horizon research operating system for catalyst review, technical structure, execution planning, and source-linked memo workflow.",
-  appEyebrow: "Market Intelligence Desk",
+    "Premium market intelligence for traders and analysts. Catalyst review, structured risk, and research-grade market context without terminal bloat.",
+  appEyebrow: "Institutional Market Review",
   appSummary:
-    "Coverage, chart markup, catalyst review, technical structure, workflow memory, and execution context in one operating surface.",
+    "High-signal market review across price, catalysts, sentiment, and risk in one calm analytical workspace.",
   loginPrompt:
-    "Use your Unveni credentials to restore desks, alerts, source-linked memos, and active market context.",
+    "Restore your Unveni workspace, watchlists, memos, and market context from the last active session.",
   registerPrompt:
-    "Create a persistent Unveni account for a desk-grade workflow backed by the API.",
+    "Request access to the Unveni research environment and join the next analyst cohort.",
 };
 
 export function brandLabel(label?: string) {

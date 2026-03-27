@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AuthShell from "@/components/AuthShell";
+import Button from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { loginWithEmail, restoreSession } from "@/lib/auth";
 import { brand } from "@/lib/brand";
 
@@ -33,87 +35,86 @@ export default function LoginPage() {
   return (
     <AuthShell
       eyebrow="Secure Sign-In"
-      title="Return to the active desk."
+      title="Return to the desk."
       subtitle={brand.loginPrompt}
       altHref="/register"
-      altLabel="Create an account"
-      altPrompt={`New to ${brand.name}?`}
+      altLabel="Request access"
+      altPrompt="Need an invitation?"
     >
-      <div>
+      <div className="p-6 sm:p-7">
         <div className="eyebrow">Desk Access</div>
-        <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
-          Sign in and restore your workspace.
+        <div className="mt-3 text-2xl font-semibold text-[color:var(--text-strong)]">
+          Sign in to restore your workspace.
         </div>
-        <p className="mt-3 text-sm leading-7 text-slate-300">
-          Workspaces, alerts, memo state, and the current desk context come back before the product opens.
+        <p className="mt-3 text-sm leading-7 text-[color:var(--text-muted)]">
+          Watchlists, memo state, and the last active market context return with the session.
         </p>
-      </div>
 
-      <form
-        className="mt-6 space-y-4"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setError(null);
-          setLoading(true);
+        <form
+          className="mt-8 space-y-5"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setError(null);
+            setLoading(true);
 
-          try {
-            await loginWithEmail(email.trim(), password);
-            router.push("/workspace");
-          } catch (err) {
-            setError(err instanceof Error ? err.message : "Login failed.");
-          } finally {
-            setLoading(false);
-          }
-        }}
-      >
-        <div className="space-y-2">
-          <label className="field-label" htmlFor="email">
-            Email
-          </label>
-          <input
-            id="email"
-            className="text-input"
-            placeholder="analyst@firm.com"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="field-label" htmlFor="password">
-            Password
-          </label>
-          <div className="flex gap-2">
-            <input
-              id="password"
-              className="text-input"
-              placeholder="Enter your password"
-              type={showPassword ? "text" : "password"}
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+            try {
+              await loginWithEmail(email.trim(), password);
+              router.push("/workspace");
+            } catch (err) {
+              setError(err instanceof Error ? err.message : "Login failed.");
+            } finally {
+              setLoading(false);
+            }
+          }}
+        >
+          <div className="space-y-2">
+            <label className="field-label" htmlFor="email">
+              Work email
+            </label>
+            <Input
+              id="email"
+              placeholder="analyst@firm.com"
+              autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
             />
-            <button
-              type="button"
-              className="action-button-secondary min-w-[82px]"
-              onClick={() => setShowPassword((current) => !current)}
-            >
-              {showPassword ? "Hide" : "Show"}
-            </button>
           </div>
-        </div>
 
-        {error ? (
-          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-200">
-            {error}
+          <div className="space-y-2">
+            <label className="field-label" htmlFor="password">
+              Password
+            </label>
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_96px]">
+              <Input
+                id="password"
+                placeholder="Enter your password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setShowPassword((current) => !current)}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </Button>
+            </div>
           </div>
-        ) : null}
 
-        <button className="action-button w-full" disabled={loading}>
-          {loading ? "Signing in..." : "Open Desk"}
-        </button>
-      </form>
+          {error ? (
+            <div className="rounded-[18px] border border-[rgba(221,132,105,0.32)] bg-[rgba(221,132,105,0.12)] p-4 text-sm text-[color:var(--text-strong)]">
+              {error}
+            </div>
+          ) : null}
+
+          <Button type="submit" block disabled={loading}>
+            {loading ? "Signing in..." : "Open Workspace"}
+          </Button>
+        </form>
+      </div>
     </AuthShell>
   );
 }

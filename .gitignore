@@ -3,6 +3,8 @@ marketpulse-frontend/node_modules/
 marketpulse-frontend/.next/
 marketpulse-frontend/out/
 marketpulse-frontend/build/
+marketpulse-frontend/output/
+marketpulse-frontend/*.tsbuildinfo
 
 # Backend
 marketpulse-backend/venv/

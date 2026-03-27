@@ -1,188 +1,140 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import Link from "next/link";
 import AuthShell from "@/components/AuthShell";
-import { registerWithEmail, restoreSession } from "@/lib/auth";
+import Button from "@/components/ui/Button";
+import { Input, Textarea } from "@/components/ui/Input";
 import { brand } from "@/lib/brand";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [team, setTeam] = useState("");
+  const [focus, setFocus] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
-  useEffect(() => {
-    let active = true;
+  if (submitted) {
+    return (
+      <AuthShell
+        eyebrow="Access Requested"
+        title="Your request is in the queue."
+        subtitle="The access team will review the seat request and follow up over email."
+        altHref="/login"
+        altLabel="Sign in"
+        altPrompt="Already approved?"
+      >
+        <div className="p-6 sm:p-7">
+          <div className="eyebrow">Request Logged</div>
+          <div className="mt-3 text-2xl font-semibold text-[color:var(--text-strong)]">
+            We have your desk details.
+          </div>
+          <p className="mt-4 text-sm leading-7 text-[color:var(--text-muted)]">
+            You should expect a follow-up at <span className="text-[color:var(--text-strong)]">{email}</span>{" "}
+            once the request has been reviewed.
+          </p>
 
-    restoreSession()
-      .then((session) => {
-        if (active && session) {
-          router.replace("/workspace");
-        }
-      })
-      .catch(() => null);
+          <div className="workspace-callout mt-8">
+            Until access is approved, you can still review the public product positioning and return
+            here when the invitation arrives.
+          </div>
 
-    return () => {
-      active = false;
-    };
-  }, [router]);
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/" prefetch={false} className="action-button-secondary px-4 py-3 text-sm">
+              Back to Landing
+            </Link>
+            <Link href="/login" prefetch={false} className="action-button px-4 py-3 text-sm">
+              Sign In
+            </Link>
+          </div>
+        </div>
+      </AuthShell>
+    );
+  }
 
   return (
     <AuthShell
-      eyebrow="New Workspace"
-      title={`Create your ${brand.name} account.`}
+      eyebrow="Request Access"
+      title="Join the Unveni desk."
       subtitle={brand.registerPrompt}
       altHref="/login"
-      altLabel="Log in"
+      altLabel="Sign in"
       altPrompt="Already have access?"
     >
-      <div>
-        <div className="eyebrow">Account Setup</div>
-        <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
-          Open your workspace.
+      <div className="p-6 sm:p-7">
+        <div className="eyebrow">Seat Request</div>
+        <div className="mt-3 text-2xl font-semibold text-[color:var(--text-strong)]">
+          Request analyst access.
         </div>
-        <p className="mt-3 text-sm leading-7 text-slate-300">
-          This account flow is backed by the API, and the workspace state follows the user after sign-in.
+        <p className="mt-3 text-sm leading-7 text-[color:var(--text-muted)]">
+          Share the desk context and coverage focus so the workspace can be configured correctly.
         </p>
-      </div>
 
-      <form
-        className="mt-6 space-y-4"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setError(null);
-
-          const trimmedName = name.trim();
-          const trimmedEmail = email.trim();
-
-          if (!trimmedName) {
-            setError("Full name is required.");
-            return;
-          }
-
-          if (!trimmedEmail) {
-            setError("Email is required.");
-            return;
-          }
-
-          if (password.length < 8) {
-            setError("Password must be at least 8 characters.");
-            return;
-          }
-
-          if (password !== confirmPassword) {
-            setError("Passwords do not match.");
-            return;
-          }
-
-          setLoading(true);
-          try {
-            await registerWithEmail({ name: trimmedName, email: trimmedEmail, password });
-            router.push("/workspace");
-          } catch (err) {
-            setError(err instanceof Error ? err.message : "Registration failed.");
-          } finally {
-            setLoading(false);
-          }
-        }}
-      >
-        <div className="space-y-2">
-          <label className="field-label" htmlFor="name">
-            Full Name
-          </label>
-          <input
-            id="name"
-            className="text-input"
-            placeholder="Morgan Lee"
-            autoComplete="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="field-label" htmlFor="email">
-            Work Email
-          </label>
-          <input
-            id="email"
-            className="text-input"
-            placeholder="analyst@firm.com"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="field-label" htmlFor="password">
-            Password
-          </label>
-          <div className="flex gap-2">
-            <input
-              id="password"
-              className="text-input"
-              placeholder="At least 8 characters"
-              type={showPassword ? "text" : "password"}
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+        <form
+          className="mt-8 space-y-5"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setSubmitted(true);
+          }}
+        >
+          <div className="space-y-2">
+            <label className="field-label" htmlFor="name">
+              Full name
+            </label>
+            <Input
+              id="name"
+              placeholder="Morgan Lee"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              required
             />
-            <button
-              type="button"
-              className="action-button-secondary min-w-[82px]"
-              onClick={() => setShowPassword((current) => !current)}
-            >
-              {showPassword ? "Hide" : "Show"}
-            </button>
           </div>
-        </div>
 
-        <div className="space-y-2">
-          <label className="field-label" htmlFor="confirm-password">
-            Confirm Password
-          </label>
-          <input
-            id="confirm-password"
-            className="text-input"
-            placeholder="Repeat your password"
-            type="password"
-            autoComplete="new-password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
-        </div>
-
-        <div className="grid gap-2 rounded-[18px] border border-white/10 bg-white/[0.025] p-4 text-sm text-slate-300">
-          <div className={password.length >= 8 ? "signal-positive" : "text-slate-400"}>
-            At least 8 characters
+          <div className="space-y-2">
+            <label className="field-label" htmlFor="email">
+              Work email
+            </label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="analyst@firm.com"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
           </div>
-          <div
-            className={
-              confirmPassword.length > 0 && password === confirmPassword
-                ? "signal-positive"
-                : "text-slate-400"
-            }
-          >
-            Passwords match
-          </div>
-        </div>
 
-        {error ? (
-          <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-200">
-            {error}
+          <div className="space-y-2">
+            <label className="field-label" htmlFor="team">
+              Firm or team
+            </label>
+            <Input
+              id="team"
+              placeholder="Equity strategy"
+              value={team}
+              onChange={(event) => setTeam(event.target.value)}
+              required
+            />
           </div>
-        ) : null}
 
-        <button className="action-button w-full" disabled={loading}>
-          {loading ? "Creating account..." : "Create Desk Account"}
-        </button>
-      </form>
+          <div className="space-y-2">
+            <label className="field-label" htmlFor="focus">
+              Coverage focus
+            </label>
+            <Textarea
+              id="focus"
+              placeholder="Large-cap growth, macro catalysts, and event-driven research."
+              value={focus}
+              onChange={(event) => setFocus(event.target.value)}
+              required
+            />
+          </div>
+
+          <Button type="submit" block>
+            Request Access
+          </Button>
+        </form>
+      </div>
     </AuthShell>
   );
 }
