@@ -8,10 +8,12 @@ from app.models.workflow import (
     MemoUpsertRequest,
     WorkspaceCreateRequest,
     WorkspaceDetailResponse,
+    WorkspacePortfolioResponse,
     WorkspaceSummary,
     WorkspaceUpdateRequest,
     WatchlistAddRequest,
 )
+from app.services.portfolio_service import build_workspace_portfolio
 from app.services.auth_service import get_user_for_token
 from app.services.workflow_service import (
     add_watchlist_symbol,
@@ -75,6 +77,14 @@ def workspace_create(payload: WorkspaceCreateRequest, user: AuthUser = Depends(_
 def workspace_detail(workspace_id: int, user: AuthUser = Depends(_require_user)):
     try:
         return get_workspace_detail(user.id, workspace_id)
+    except ValueError as exc:
+        _raise_value_error(exc)
+
+
+@router.get("/{workspace_id}/portfolio", response_model=WorkspacePortfolioResponse)
+def workspace_portfolio(workspace_id: int, user: AuthUser = Depends(_require_user)):
+    try:
+        return build_workspace_portfolio(user.id, workspace_id)
     except ValueError as exc:
         _raise_value_error(exc)
 

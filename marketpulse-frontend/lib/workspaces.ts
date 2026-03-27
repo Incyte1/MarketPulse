@@ -54,6 +54,48 @@ export type WorkspaceDetailResponse = {
   memo: InvestmentMemo;
 };
 
+export type PortfolioCandidate = {
+  symbol: string;
+  company_name: string;
+  disposition: "buy" | "hold" | "sell";
+  slot_status: string;
+  rank?: number | null;
+  conviction_score: number;
+  bias_label: string;
+  confidence_label: string;
+  confidence_value: number;
+  total_score: number;
+  structure_score: number;
+  current_price: number;
+  daily_change_percent: number;
+  trend_medium: string;
+  momentum_state: string;
+  regime_state: string;
+  support_level: number;
+  resistance_level: number;
+  primary_driver: string;
+  summary: string;
+  reasons: string[];
+  warnings: string[];
+};
+
+export type WorkspacePortfolioResponse = {
+  workspace_id: number;
+  workspace_name: string;
+  selected_horizon: "short_term" | "long_term";
+  interval: string;
+  generated_at: string;
+  market_status: string;
+  coverage_count: number;
+  resolved_count: number;
+  capacity_limit: number;
+  overview: string;
+  buy_queue: PortfolioCandidate[];
+  hold_queue: PortfolioCandidate[];
+  sell_queue: PortfolioCandidate[];
+  errors: string[];
+};
+
 async function workspaceRequest<T>(path: string, token: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   headers.set("Content-Type", "application/json");
@@ -90,6 +132,19 @@ export async function fetchWorkspaceDetail(token: string, workspaceId: number): 
   return workspaceRequest<WorkspaceDetailResponse>(`/api/workspaces/${workspaceId}`, token, {
     method: "GET",
   });
+}
+
+export async function fetchWorkspacePortfolio(
+  token: string,
+  workspaceId: number
+): Promise<WorkspacePortfolioResponse> {
+  return workspaceRequest<WorkspacePortfolioResponse>(
+    `/api/workspaces/${workspaceId}/portfolio`,
+    token,
+    {
+      method: "GET",
+    }
+  );
 }
 
 export async function createWorkspace(

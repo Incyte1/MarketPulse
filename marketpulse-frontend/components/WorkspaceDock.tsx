@@ -10,12 +10,15 @@ import {
   addWorkspaceSymbol,
   createWorkspace,
   fetchWorkspaceDetail,
+  fetchWorkspacePortfolio,
   fetchWorkspaces,
   removeWorkspaceAlert,
   removeWorkspaceSymbol,
   saveWorkspaceMemo,
   type MemoSourceLink,
+  type PortfolioCandidate,
   type WorkspaceDetailResponse,
+  type WorkspacePortfolioResponse,
   type WorkspaceSummary,
   updateWorkspaceSelection,
 } from "@/lib/workspaces";
@@ -29,7 +32,7 @@ type AlertPreset = {
   note: string;
 };
 
-type DockTab = "overview" | "watchlist" | "alerts" | "memo";
+type DockTab = "overview" | "portfolio" | "watchlist" | "alerts" | "memo";
 
 type Props = {
   session: AuthSession | null;
@@ -89,6 +92,59 @@ function alertTone(ruleType: string, level: number, currentPrice: number) {
   };
 }
 
+function dispositionTone(disposition: PortfolioCandidate["disposition"]) {
+  if (disposition === "buy") {
+    return {
+      label: "Buy",
+      className: "border-emerald-500/20 bg-emerald-500/10 text-emerald-300",
+    };
+  }
+
+  if (disposition === "sell") {
+    return {
+      label: "Sell",
+      className: "border-rose-500/20 bg-rose-500/10 text-rose-300",
+    };
+  }
+
+  return {
+    label: "Hold",
+    className: "border-amber-500/20 bg-amber-500/10 text-amber-300",
+  };
+}
+
+function slotTone(slotStatus: string) {
+  if (slotStatus === "primary") {
+    return {
+      label: "Primary",
+      className: "border-cyan-500/20 bg-cyan-500/10 text-cyan-200",
+    };
+  }
+
+  if (slotStatus === "bench") {
+    return {
+      label: "Bench",
+      className: "border-white/10 bg-white/5 text-slate-300",
+    };
+  }
+
+  if (slotStatus === "exit") {
+    return {
+      label: "Exit",
+      className: "border-rose-500/20 bg-rose-500/10 text-rose-300",
+    };
+  }
+
+  return {
+    label: "Review",
+    className: "border-amber-500/20 bg-amber-500/10 text-amber-300",
+  };
+}
+
+function formatDriverLabel(driver: string) {
+  return driver.replace(/\b\w/g, (match) => match.toUpperCase());
+}
+
 function emptyDraft(): MemoDraft {
   return {
     thesis: "",
@@ -136,9 +192,11 @@ export default function WorkspaceDock({
   const [workspaces, setWorkspaces] = useState<WorkspaceSummary[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<number | null>(null);
   const [detail, setDetail] = useState<WorkspaceDetailResponse | null>(null);
+  const [portfolio, setPortfolio] = useState<WorkspacePortfolioResponse | null>(null);
   const [memoDraft, setMemoDraft] = useState<MemoDraft>(emptyDraft());
   const [createName, setCreateName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingPortfolio, setLoadingPortfolio] = useState(false);
   const [mutating, setMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DockTab>("overview");
@@ -147,6 +205,7 @@ export default function WorkspaceDock({
   const currentPrice = analysis?.price_context.current_price ?? 0;
   const technical = analysis?.technical_context;
   const memoSourceCount = detail?.memo.source_links.length ?? 0;
+  const watchlistSignature = detail?.watchlist.map((item) => item.symbol).join("|") ?? "";
   const memoWorkspaceId = detail?.workspace.id ?? null;
   const memoUpdatedAt = detail?.memo.updated_at ?? "";
   const memoThesis = detail?.memo.thesis ?? "";
@@ -251,6 +310,7 @@ export default function WorkspaceDock({
       setWorkspaces([]);
       setActiveWorkspaceId(null);
       setDetail(null);
+      setPortfolio(null);
       setMemoDraft(emptyDraft());
       setError(null);
       return;
@@ -271,6 +331,7 @@ export default function WorkspaceDock({
         if (!firstWorkspace) {
           setActiveWorkspaceId(null);
           setDetail(null);
+          setPortfolio(null);
           return;
         }
 
@@ -339,6 +400,46 @@ export default function WorkspaceDock({
   useEffect(() => {
     setMemoDraft(memoSeed);
   }, [memoSeed]);
+
+  useEffect(() => {
+    if (!token || !detail?.workspace.id) {
+      setPortfolio(null);
+      return;
+    }
+
+    let cancelled = false;
+    const sessionToken = token;
+    const workspaceId = detail.workspace.id;
+
+    async function loadPortfolio() {
+      try {
+        setLoadingPortfolio(true);
+        const nextPortfolio = await fetchWorkspacePortfolio(sessionToken, workspaceId);
+        if (cancelled) return;
+        setPortfolio(nextPortfolio);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load portfolio engine.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingPortfolio(false);
+        }
+      }
+    }
+
+    loadPortfolio();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    detail?.workspace.id,
+    detail?.workspace.selected_horizon,
+    detail?.workspace.selected_symbol,
+    token,
+    watchlistSignature,
+  ]);
 
   useEffect(() => {
     if (!token || !detail) return;
@@ -521,6 +622,90 @@ export default function WorkspaceDock({
     }));
   }
 
+  function renderPortfolioGroup(
+    title: string,
+    subtitle: string,
+    items: PortfolioCandidate[],
+    emptyState: string
+  ) {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold text-white">{title}</div>
+            <div className="mt-1 text-xs text-slate-500">{subtitle}</div>
+          </div>
+          <div className="desk-chip mono">{items.length}</div>
+        </div>
+
+        {items.length ? (
+          items.map((item) => {
+            const signalTone = dispositionTone(item.disposition);
+            const statusTone = slotTone(item.slot_status);
+
+            return (
+              <button
+                key={`${title}-${item.symbol}`}
+                type="button"
+                className="interactive-row block w-full text-left"
+                onClick={() => onActivateSymbol(item.symbol)}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-semibold text-white">{item.symbol}</span>
+                      <span className="truncate text-xs text-slate-500">{item.company_name}</span>
+                    </div>
+                    <div className="mt-2 text-sm leading-6 text-slate-300">
+                      {item.summary || item.reasons[0] || "No portfolio summary available yet."}
+                    </div>
+                  </div>
+
+                  <div className="flex shrink-0 flex-col items-end gap-2">
+                    <div className={`rounded-full border px-2 py-1 text-xs ${signalTone.className}`}>
+                      {signalTone.label}
+                    </div>
+                    <div className={`rounded-full border px-2 py-1 text-xs ${statusTone.className}`}>
+                      {statusTone.label}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.16em] text-slate-500">
+                  {item.rank ? <span>Rank {item.rank}</span> : null}
+                  <span>Score {item.conviction_score.toFixed(1)}</span>
+                  <span>{item.bias_label}</span>
+                  <span>{item.confidence_label}</span>
+                  <span>{formatDriverLabel(item.primary_driver)}</span>
+                </div>
+
+                <div className="mt-3 grid gap-2 text-xs text-slate-400 sm:grid-cols-2">
+                  <div>
+                    Trend {item.trend_medium} | Regime {item.regime_state.replaceAll("_", " ")}
+                  </div>
+                  <div>
+                    Price {item.current_price.toFixed(2)} | Levels {item.support_level.toFixed(2)} /{" "}
+                    {item.resistance_level.toFixed(2)}
+                  </div>
+                </div>
+
+                {item.reasons.length ? (
+                  <div className="mt-3 text-xs leading-5 text-slate-300">{item.reasons[0]}</div>
+                ) : null}
+
+                {item.warnings.length ? (
+                  <div className="mt-1 text-xs leading-5 text-slate-500">{item.warnings[0]}</div>
+                ) : null}
+              </button>
+            );
+          })
+        ) : (
+          <div className="interactive-row text-sm text-slate-300">{emptyState}</div>
+        )}
+      </div>
+    );
+  }
+
   if (!session) {
     return (
       <aside className="space-y-4 xl:self-start">
@@ -619,7 +804,7 @@ export default function WorkspaceDock({
           </div>
 
           {detail ? (
-            <div className="grid gap-2 sm:grid-cols-3">
+            <div className="grid gap-2 sm:grid-cols-4">
               <div className="interactive-row">
                 <div className="eyebrow">Watchlist</div>
                 <div className="mt-2 text-base font-semibold text-white">
@@ -641,11 +826,20 @@ export default function WorkspaceDock({
                 </div>
                 <div className="mt-1 text-xs text-slate-500">Linked sources</div>
               </div>
+              <div className="interactive-row">
+                <div className="eyebrow">Portfolio</div>
+                <div className="mt-2 text-base font-semibold text-white">
+                  {portfolio?.buy_queue.length ?? 0}
+                </div>
+                <div className="mt-1 text-xs text-slate-500">
+                  {portfolio ? `${portfolio.capacity_limit} active slots` : "Loading queue"}
+                </div>
+              </div>
             </div>
           ) : null}
 
           <div className="inline-flex rounded-[16px] border border-white/10 bg-black/20 p-1">
-            {(["overview", "watchlist", "alerts", "memo"] as DockTab[]).map((tab) => (
+            {(["overview", "portfolio", "watchlist", "alerts", "memo"] as DockTab[]).map((tab) => (
               <button
                 key={tab}
                 type="button"
@@ -654,6 +848,8 @@ export default function WorkspaceDock({
               >
                 {tab === "overview"
                   ? "Desk"
+                  : tab === "portfolio"
+                    ? "Portfolio"
                   : tab === "watchlist"
                     ? "Watchlist"
                     : tab === "alerts"
@@ -685,9 +881,85 @@ export default function WorkspaceDock({
                     : "The memo has not been saved yet."}
                 </div>
               </div>
+              <div className="interactive-row">
+                <div className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
+                  Portfolio engine
+                </div>
+                <div className="mt-2 text-sm leading-7 text-slate-200">
+                  {portfolio
+                    ? portfolio.overview
+                    : "Ranking the active watchlist into buy, hold, and exit queues."}
+                </div>
+              </div>
             </div>
           ) : null}
         </div>
+      </section>
+
+      <section
+        className={`frame-shell reveal-up reveal-delay-3 p-4 lg:p-5 ${
+          activeTab === "portfolio" ? "" : "hidden"
+        }`}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="eyebrow">Portfolio Engine</div>
+            <div className="mt-2 text-lg font-semibold text-white">Ranked action queue</div>
+            <div className="mt-1 text-sm text-slate-400">
+              Seero-style orchestration built on your existing ticker engine.
+            </div>
+          </div>
+
+          {portfolio ? (
+            <div className="flex flex-col items-end gap-2">
+              <div className="desk-chip mono">{portfolio.market_status}</div>
+              <div className="text-xs text-slate-500">
+                {portfolio.coverage_count} symbols | {portfolio.capacity_limit} slots
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        {loadingPortfolio ? (
+          <div className="interactive-row mt-4 text-sm text-slate-300">
+            Ranking the current universe and building the portfolio queue...
+          </div>
+        ) : null}
+
+        {portfolio ? (
+          <div className="mt-4 space-y-4">
+            <div className="interactive-row text-sm leading-7 text-slate-200">
+              {portfolio.overview}
+            </div>
+
+            {renderPortfolioGroup(
+              "Buy Queue",
+              "Fresh capital should flow top-down through this ranked list.",
+              portfolio.buy_queue,
+              "No clean buy candidates are ready right now."
+            )}
+
+            {renderPortfolioGroup(
+              "Review Queue",
+              "Mixed reads that still need cleaner confirmation or stronger conviction.",
+              portfolio.hold_queue,
+              "No review names are parked here right now."
+            )}
+
+            {renderPortfolioGroup(
+              "Exit Queue",
+              "Symbols where the current engine leans defensive.",
+              portfolio.sell_queue,
+              "No immediate exit candidates were flagged."
+            )}
+
+            {portfolio.errors.length ? (
+              <div className="interactive-row border-amber-500/20 bg-amber-500/10 text-sm text-amber-100">
+                {portfolio.errors.join(" | ")}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </section>
 
       <section
