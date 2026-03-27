@@ -15,6 +15,10 @@ from app.models.ticker import (
     TickerAnalysisResponse,
 )
 from app.services import auth_service, portfolio_service, workflow_service
+from app.services.portfolio_report_service import (
+    build_workspace_execution_preview,
+    build_workspace_portfolio_report,
+)
 
 
 def _analysis(
@@ -69,6 +73,39 @@ def _analysis(
         interpreted_ticker_news=[],
         interpreted_macro_news=[],
     )
+
+
+def _features(
+    symbol: str,
+    *,
+    benchmark_symbol: str = "SPY",
+    sector_etf: str = "XLK",
+    sector: str = "Technology",
+    relative_strength_20d: float = 0.0,
+    relative_strength_sector_20d: float = 0.0,
+    return_20d: float = 0.0,
+    volume_ratio_20d: float = 1.0,
+    market_tone: str = "mixed",
+) -> dict:
+    return {
+        "symbol": symbol,
+        "company_name": f"{symbol} Corp",
+        "sector": sector,
+        "subsector": "General",
+        "benchmark_symbol": benchmark_symbol,
+        "sector_etf": sector_etf,
+        "return_5d": round(return_20d / 4.0, 2),
+        "return_20d": return_20d,
+        "return_50d": round(return_20d * 1.8, 2),
+        "benchmark_return_20d": 3.0,
+        "sector_return_20d": 2.0,
+        "spy_return_20d": 2.5,
+        "relative_strength_20d": relative_strength_20d,
+        "relative_strength_sector_20d": relative_strength_sector_20d,
+        "volume_ratio_20d": volume_ratio_20d,
+        "atr_percent": 2.4,
+        "market_tone": market_tone,
+    }
 
 
 class PortfolioServiceTests(unittest.TestCase):
@@ -166,10 +203,49 @@ class PortfolioServiceTests(unittest.TestCase):
                 primary_driver="price_structure_and_trend",
             ),
         }
+        features = {
+            "NVDA": _features(
+                "NVDA",
+                relative_strength_20d=4.5,
+                relative_strength_sector_20d=3.6,
+                return_20d=12.0,
+                volume_ratio_20d=1.4,
+                market_tone="risk_on",
+            ),
+            "AAPL": _features(
+                "AAPL",
+                relative_strength_20d=2.0,
+                relative_strength_sector_20d=1.2,
+                return_20d=8.0,
+                volume_ratio_20d=1.1,
+                market_tone="risk_on",
+            ),
+            "MSFT": _features(
+                "MSFT",
+                relative_strength_20d=0.1,
+                relative_strength_sector_20d=0.0,
+                return_20d=3.0,
+                volume_ratio_20d=0.95,
+            ),
+            "TSLA": _features(
+                "TSLA",
+                benchmark_symbol="QQQ",
+                sector_etf="XLY",
+                sector="Consumer Discretionary",
+                relative_strength_20d=-5.5,
+                relative_strength_sector_20d=-4.2,
+                return_20d=-10.0,
+                volume_ratio_20d=1.3,
+                market_tone="risk_off",
+            ),
+        }
 
         with patch(
             "app.services.portfolio_service._analysis_for_symbol",
             side_effect=lambda symbol, interval: analyses[symbol],
+        ), patch(
+            "app.services.portfolio_service.get_multivariate_signal_context",
+            side_effect=lambda symbol: features[symbol],
         ):
             result = portfolio_service.build_workspace_portfolio(self.session.user.id, workspace.id)
 
@@ -179,6 +255,21 @@ class PortfolioServiceTests(unittest.TestCase):
         self.assertEqual([item.symbol for item in result.sell_queue], ["TSLA"])
         self.assertTrue(result.overview.startswith("Signal Desk has 2 buy candidates"))
         self.assertTrue(all(item.slot_status == "primary" for item in result.buy_queue))
+        self.assertGreater(result.buy_queue[0].target_weight_percent, result.buy_queue[1].target_weight_percent)
+
+        with patch(
+            "app.services.portfolio_service._analysis_for_symbol",
+            side_effect=lambda symbol, interval: analyses[symbol],
+        ), patch(
+            "app.services.portfolio_service.get_multivariate_signal_context",
+            side_effect=lambda symbol: features[symbol],
+        ):
+            report = build_workspace_portfolio_report(self.session.user.id, workspace.id)
+            preview = build_workspace_execution_preview(self.session.user.id, workspace.id)
+
+        self.assertIn("daily portfolio summary", report.email_subject)
+        self.assertEqual(preview.alpaca_status.configured, False)
+        self.assertTrue(any(action.action == "buy" for action in preview.proposed_actions))
 
 
 if __name__ == "__main__":

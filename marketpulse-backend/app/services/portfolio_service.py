@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from app.models.ticker import TickerAnalysisResponse
 from app.models.workflow import PortfolioCandidate, WorkspacePortfolioResponse
 from app.services.cache_db import cache_get
+from app.services.market_feature_service import get_multivariate_signal_context
 from app.services.refresh_service import refresh_symbol_cache
 from app.services.refresh_tasks import run_once
 from app.services.workflow_service import get_workspace_detail
@@ -49,7 +50,7 @@ def _normalize_driver(driver: str) -> str:
     return driver.replace("_", " ").strip() if driver else "unknown"
 
 
-def _conviction_score(analysis: TickerAnalysisResponse) -> float:
+def _conviction_score(analysis: TickerAnalysisResponse, features: dict) -> float:
     bias = analysis.bias
     technical = analysis.technical_context
 
@@ -78,19 +79,47 @@ def _conviction_score(analysis: TickerAnalysisResponse) -> float:
     elif technical.exhaustion_score > 0 and bias.label == "BULLISH":
         score += 0.4
 
+    score += float(features.get("relative_strength_20d", 0.0)) * 0.55
+    score += float(features.get("relative_strength_sector_20d", 0.0)) * 0.45
+    score += float(features.get("return_5d", 0.0)) * 0.2
+
+    volume_ratio = float(features.get("volume_ratio_20d", 1.0))
+    if volume_ratio >= 1.2:
+        score += 0.8
+    elif volume_ratio <= 0.8:
+        score -= 0.35
+
+    atr_percent = float(features.get("atr_percent", 0.0))
+    if atr_percent >= 5.0:
+        score -= 0.5
+    elif 0.0 < atr_percent <= 2.0:
+        score += 0.25
+
+    market_tone = features.get("market_tone", "mixed")
+    if market_tone == "risk_on" and bias.label == "BULLISH":
+        score += 0.65
+    elif market_tone == "risk_off" and bias.label == "BEARISH":
+        score += 0.5
+    elif market_tone == "risk_off" and bias.label == "BULLISH":
+        score -= 0.9
+
     return round(score, 2)
 
 
-def _disposition_for_analysis(analysis: TickerAnalysisResponse) -> str:
+def _disposition_for_analysis(analysis: TickerAnalysisResponse, features: dict) -> str:
     bias = analysis.bias
     technical = analysis.technical_context
     direction = analysis.guidance.preferred_direction
+    relative_strength = float(features.get("relative_strength_20d", 0.0))
+    relative_strength_sector = float(features.get("relative_strength_sector_20d", 0.0))
+    market_tone = features.get("market_tone", "mixed")
 
     bullish_stack = (
         direction == "long"
         and bias.total_score >= 5
         and technical.structure_score >= 2
         and (technical.trend_score >= 0 or technical.momentum_state == "positive")
+        and relative_strength >= -0.5
     )
     bearish_stack = direction == "short" and (
         bias.total_score <= -5 or technical.structure_score <= -4 or technical.trend_score <= -3
@@ -100,6 +129,7 @@ def _disposition_for_analysis(analysis: TickerAnalysisResponse) -> str:
         bias.label == "BULLISH"
         and bias.confidence_value >= 50
         and technical.structure_score >= 4
+        and relative_strength_sector >= -1.0
     ):
         return "buy"
 
@@ -108,6 +138,9 @@ def _disposition_for_analysis(analysis: TickerAnalysisResponse) -> str:
         and (bias.confidence_value >= 45 or technical.structure_score <= -5)
     ):
         return "sell"
+
+    if market_tone == "risk_off" and bias.label == "BULLISH" and relative_strength < 0:
+        return "hold"
 
     return "hold"
 
@@ -129,20 +162,32 @@ def _dedupe_lines(items: list[str], limit: int) -> list[str]:
     return ordered
 
 
-def _reasons_for_candidate(analysis: TickerAnalysisResponse, disposition: str) -> list[str]:
+def _reasons_for_candidate(analysis: TickerAnalysisResponse, disposition: str, features: dict) -> list[str]:
     pro = analysis.professional_analysis
+    feature_lines = []
+
+    if float(features.get("relative_strength_20d", 0.0)) > 0:
+        feature_lines.append(
+            f"Relative strength vs {features.get('benchmark_symbol', 'SPY')} is positive over the last 20 sessions"
+        )
+    if float(features.get("relative_strength_sector_20d", 0.0)) > 0:
+        feature_lines.append(
+            f"The symbol is outperforming its sector proxy {features.get('sector_etf', 'SPY')}"
+        )
+    if float(features.get("volume_ratio_20d", 1.0)) >= 1.2:
+        feature_lines.append("Volume is running above the 20-day baseline, supporting follow-through")
 
     if disposition == "buy":
-        reasons = [analysis.guidance.headline, *pro.confirmation]
+        reasons = [analysis.guidance.headline, *feature_lines, *pro.confirmation]
     elif disposition == "sell":
         reasons = [analysis.guidance.headline, *pro.invalidation]
     else:
-        reasons = [analysis.guidance.headline, *pro.confirmation[:1], pro.tactical_stance]
+        reasons = [analysis.guidance.headline, *feature_lines[:1], *pro.confirmation[:1], pro.tactical_stance]
 
     return _dedupe_lines(reasons, limit=3)
 
 
-def _warnings_for_candidate(analysis: TickerAnalysisResponse) -> list[str]:
+def _warnings_for_candidate(analysis: TickerAnalysisResponse, features: dict) -> list[str]:
     technical = analysis.technical_context
     warnings = [
         *analysis.guidance.warnings,
@@ -155,17 +200,21 @@ def _warnings_for_candidate(analysis: TickerAnalysisResponse) -> list[str]:
         warnings.append("Momentum is extended enough that pullback risk should be respected.")
     if technical.economic_pressure == "risk_off":
         warnings.append("The broader tape still reads risk-off.")
+    if float(features.get("atr_percent", 0.0)) >= 5.0:
+        warnings.append("ATR as a percent of price is elevated, so sizing should stay disciplined.")
+    if float(features.get("relative_strength_20d", 0.0)) < -3.0:
+        warnings.append("Relative strength is lagging the benchmark badly enough to stay selective.")
 
     return _dedupe_lines(warnings, limit=3)
 
 
-def _candidate_from_analysis(analysis: TickerAnalysisResponse) -> PortfolioCandidate:
-    disposition = _disposition_for_analysis(analysis)
+def _candidate_from_analysis(analysis: TickerAnalysisResponse, features: dict) -> PortfolioCandidate:
+    disposition = _disposition_for_analysis(analysis, features)
     return PortfolioCandidate(
         symbol=analysis.symbol,
         company_name=analysis.company_name,
         disposition=disposition,
-        conviction_score=_conviction_score(analysis),
+        conviction_score=_conviction_score(analysis, features),
         bias_label=analysis.bias.label,
         confidence_label=analysis.bias.confidence_label,
         confidence_value=analysis.bias.confidence_value,
@@ -178,11 +227,25 @@ def _candidate_from_analysis(analysis: TickerAnalysisResponse) -> PortfolioCandi
         regime_state=analysis.technical_context.regime_state,
         support_level=analysis.technical_context.support_level,
         resistance_level=analysis.technical_context.resistance_level,
+        sector=features.get("sector", "Broad Market"),
+        subsector=features.get("subsector", "General"),
+        benchmark_symbol=features.get("benchmark_symbol", "SPY"),
+        sector_etf=features.get("sector_etf", "SPY"),
+        return_5d=float(features.get("return_5d", 0.0)),
+        return_20d=float(features.get("return_20d", 0.0)),
+        return_50d=float(features.get("return_50d", 0.0)),
+        benchmark_return_20d=float(features.get("benchmark_return_20d", 0.0)),
+        sector_return_20d=float(features.get("sector_return_20d", 0.0)),
+        relative_strength_20d=float(features.get("relative_strength_20d", 0.0)),
+        relative_strength_sector_20d=float(features.get("relative_strength_sector_20d", 0.0)),
+        volume_ratio_20d=float(features.get("volume_ratio_20d", 1.0)),
+        atr_percent=float(features.get("atr_percent", 0.0)),
+        market_tone=str(features.get("market_tone", "mixed")),
         primary_driver=_normalize_driver(analysis.professional_analysis.primary_driver),
         summary=analysis.professional_analysis.plain_english_summary
         or analysis.professional_analysis.executive_summary,
-        reasons=_reasons_for_candidate(analysis, disposition),
-        warnings=_warnings_for_candidate(analysis),
+        reasons=_reasons_for_candidate(analysis, disposition, features),
+        warnings=_warnings_for_candidate(analysis, features),
     )
 
 
@@ -206,6 +269,16 @@ def _capacity_limit(symbol_count: int, horizon: str) -> int:
 
     baseline = 5 if horizon == "short_term" else 6
     return min(symbol_count, baseline)
+
+
+def _assign_target_weights(buy_queue: list[PortfolioCandidate], capacity_limit: int) -> None:
+    primaries = [item for item in buy_queue[:capacity_limit] if item.conviction_score > 0]
+    if not primaries:
+        return
+
+    total = sum(max(item.conviction_score, 1.0) for item in primaries)
+    for item in primaries:
+        item.target_weight_percent = round((max(item.conviction_score, 1.0) / total) * 100.0, 2)
 
 
 def _overview_text(
@@ -254,7 +327,8 @@ def build_workspace_portfolio(user_id: int, workspace_id: int) -> WorkspacePortf
             if market_status == "UNKNOWN":
                 market_status = analysis.market_status
 
-            candidate = _candidate_from_analysis(analysis)
+            features = get_multivariate_signal_context(symbol)
+            candidate = _candidate_from_analysis(analysis, features)
             if candidate.disposition == "buy":
                 buy_queue.append(candidate)
             elif candidate.disposition == "sell":
@@ -272,6 +346,8 @@ def build_workspace_portfolio(user_id: int, workspace_id: int) -> WorkspacePortf
     for index, item in enumerate(buy_queue, start=1):
         item.rank = index
         item.slot_status = "primary" if index <= capacity_limit else "bench"
+
+    _assign_target_weights(buy_queue, capacity_limit)
 
     for item in hold_queue:
         item.slot_status = "review"

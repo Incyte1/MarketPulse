@@ -101,6 +101,7 @@ class PortfolioCandidate(BaseModel):
     disposition: str
     slot_status: str = "review"
     rank: int | None = None
+    target_weight_percent: float = 0.0
     conviction_score: float = 0.0
     bias_label: str = "NEUTRAL"
     confidence_label: str = "Low"
@@ -114,6 +115,20 @@ class PortfolioCandidate(BaseModel):
     regime_state: str = "range"
     support_level: float = 0.0
     resistance_level: float = 0.0
+    sector: str = "Broad Market"
+    subsector: str = "General"
+    benchmark_symbol: str = "SPY"
+    sector_etf: str = "SPY"
+    return_5d: float = 0.0
+    return_20d: float = 0.0
+    return_50d: float = 0.0
+    benchmark_return_20d: float = 0.0
+    sector_return_20d: float = 0.0
+    relative_strength_20d: float = 0.0
+    relative_strength_sector_20d: float = 0.0
+    volume_ratio_20d: float = 1.0
+    atr_percent: float = 0.0
+    market_tone: str = "mixed"
     primary_driver: str = "unknown"
     summary: str = ""
     reasons: List[str] = Field(default_factory=list)
@@ -135,3 +150,57 @@ class WorkspacePortfolioResponse(BaseModel):
     hold_queue: List[PortfolioCandidate] = Field(default_factory=list)
     sell_queue: List[PortfolioCandidate] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
+
+
+class BenchmarkSnapshot(BaseModel):
+    label: str
+    symbol: str
+    return_percent: float = 0.0
+    comparison_delta_percent: float = 0.0
+
+
+class RebalanceAction(BaseModel):
+    symbol: str
+    action: str
+    target_weight_percent: float = 0.0
+    current_weight_percent: float = 0.0
+    delta_weight_percent: float = 0.0
+    rationale: str = ""
+
+
+class AlpacaStatusInfo(BaseModel):
+    configured: bool = False
+    mode: str = "paper"
+    connected: bool = False
+    account_status: str = "unconfigured"
+    equity: float = 0.0
+    buying_power: float = 0.0
+    cash: float = 0.0
+    positions_count: int = 0
+    message: str = ""
+
+
+class WorkspacePortfolioReportResponse(BaseModel):
+    workspace_id: int
+    workspace_name: str
+    generated_at: str
+    headline: str = ""
+    summary: str = ""
+    model_portfolio_return_20d: float = 0.0
+    benchmark_comparison: List[BenchmarkSnapshot] = Field(default_factory=list)
+    top_opportunities: List[PortfolioCandidate] = Field(default_factory=list)
+    top_risks: List[str] = Field(default_factory=list)
+    rebalance_notes: List[str] = Field(default_factory=list)
+    email_subject: str = ""
+    email_preview: str = ""
+
+
+class WorkspaceExecutionPreviewResponse(BaseModel):
+    workspace_id: int
+    workspace_name: str
+    generated_at: str
+    alpaca_status: AlpacaStatusInfo = Field(default_factory=AlpacaStatusInfo)
+    target_slots: int = 0
+    target_universe: List[PortfolioCandidate] = Field(default_factory=list)
+    proposed_actions: List[RebalanceAction] = Field(default_factory=list)
+    warnings: List[str] = Field(default_factory=list)

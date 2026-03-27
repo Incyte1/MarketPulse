@@ -9,16 +9,20 @@ import {
   addWorkspaceAlert,
   addWorkspaceSymbol,
   createWorkspace,
+  fetchWorkspaceExecutionPreview,
   fetchWorkspaceDetail,
   fetchWorkspacePortfolio,
+  fetchWorkspacePortfolioReport,
   fetchWorkspaces,
   removeWorkspaceAlert,
   removeWorkspaceSymbol,
   saveWorkspaceMemo,
   type MemoSourceLink,
   type PortfolioCandidate,
+  type WorkspaceExecutionPreviewResponse,
   type WorkspaceDetailResponse,
   type WorkspacePortfolioResponse,
+  type WorkspacePortfolioReportResponse,
   type WorkspaceSummary,
   updateWorkspaceSelection,
 } from "@/lib/workspaces";
@@ -145,6 +149,16 @@ function formatDriverLabel(driver: string) {
   return driver.replace(/\b\w/g, (match) => match.toUpperCase());
 }
 
+function actionTone(action: string) {
+  if (action === "sell" || action === "trim") {
+    return "border-rose-500/20 bg-rose-500/10 text-rose-300";
+  }
+  if (action === "buy" || action === "add") {
+    return "border-emerald-500/20 bg-emerald-500/10 text-emerald-300";
+  }
+  return "border-white/10 bg-white/5 text-slate-300";
+}
+
 function emptyDraft(): MemoDraft {
   return {
     thesis: "",
@@ -193,10 +207,13 @@ export default function WorkspaceDock({
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<number | null>(null);
   const [detail, setDetail] = useState<WorkspaceDetailResponse | null>(null);
   const [portfolio, setPortfolio] = useState<WorkspacePortfolioResponse | null>(null);
+  const [portfolioReport, setPortfolioReport] = useState<WorkspacePortfolioReportResponse | null>(null);
+  const [executionPreview, setExecutionPreview] = useState<WorkspaceExecutionPreviewResponse | null>(null);
   const [memoDraft, setMemoDraft] = useState<MemoDraft>(emptyDraft());
   const [createName, setCreateName] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingPortfolio, setLoadingPortfolio] = useState(false);
+  const [loadingExecution, setLoadingExecution] = useState(false);
   const [mutating, setMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DockTab>("overview");
@@ -311,6 +328,8 @@ export default function WorkspaceDock({
       setActiveWorkspaceId(null);
       setDetail(null);
       setPortfolio(null);
+      setPortfolioReport(null);
+      setExecutionPreview(null);
       setMemoDraft(emptyDraft());
       setError(null);
       return;
@@ -332,6 +351,8 @@ export default function WorkspaceDock({
           setActiveWorkspaceId(null);
           setDetail(null);
           setPortfolio(null);
+          setPortfolioReport(null);
+          setExecutionPreview(null);
           return;
         }
 
@@ -404,6 +425,8 @@ export default function WorkspaceDock({
   useEffect(() => {
     if (!token || !detail?.workspace.id) {
       setPortfolio(null);
+      setPortfolioReport(null);
+      setExecutionPreview(null);
       return;
     }
 
@@ -414,9 +437,16 @@ export default function WorkspaceDock({
     async function loadPortfolio() {
       try {
         setLoadingPortfolio(true);
-        const nextPortfolio = await fetchWorkspacePortfolio(sessionToken, workspaceId);
+        setLoadingExecution(true);
+        const [nextPortfolio, nextPortfolioReport, nextExecutionPreview] = await Promise.all([
+          fetchWorkspacePortfolio(sessionToken, workspaceId),
+          fetchWorkspacePortfolioReport(sessionToken, workspaceId),
+          fetchWorkspaceExecutionPreview(sessionToken, workspaceId),
+        ]);
         if (cancelled) return;
         setPortfolio(nextPortfolio);
+        setPortfolioReport(nextPortfolioReport);
+        setExecutionPreview(nextExecutionPreview);
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Failed to load portfolio engine.");
@@ -424,6 +454,7 @@ export default function WorkspaceDock({
       } finally {
         if (!cancelled) {
           setLoadingPortfolio(false);
+          setLoadingExecution(false);
         }
       }
     }
@@ -674,8 +705,12 @@ export default function WorkspaceDock({
                 <div className="mt-3 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.16em] text-slate-500">
                   {item.rank ? <span>Rank {item.rank}</span> : null}
                   <span>Score {item.conviction_score.toFixed(1)}</span>
+                  {item.target_weight_percent > 0 ? (
+                    <span>Weight {item.target_weight_percent.toFixed(1)}%</span>
+                  ) : null}
                   <span>{item.bias_label}</span>
                   <span>{item.confidence_label}</span>
+                  <span>{item.sector}</span>
                   <span>{formatDriverLabel(item.primary_driver)}</span>
                 </div>
 
@@ -686,6 +721,13 @@ export default function WorkspaceDock({
                   <div>
                     Price {item.current_price.toFixed(2)} | Levels {item.support_level.toFixed(2)} /{" "}
                     {item.resistance_level.toFixed(2)}
+                  </div>
+                  <div>
+                    20D RS vs {item.benchmark_symbol} {item.relative_strength_20d.toFixed(2)}% | Sector{" "}
+                    {item.relative_strength_sector_20d.toFixed(2)}%
+                  </div>
+                  <div>
+                    Volume x{item.volume_ratio_20d.toFixed(2)} | ATR {item.atr_percent.toFixed(2)}%
                   </div>
                 </div>
 
@@ -956,6 +998,154 @@ export default function WorkspaceDock({
             {portfolio.errors.length ? (
               <div className="interactive-row border-amber-500/20 bg-amber-500/10 text-sm text-amber-100">
                 {portfolio.errors.join(" | ")}
+              </div>
+            ) : null}
+
+            {portfolioReport ? (
+              <div className="space-y-3">
+                <div className="grid gap-2 sm:grid-cols-3">
+                  <div className="interactive-row">
+                    <div className="eyebrow">Model 20D</div>
+                    <div className="mt-2 text-base font-semibold text-white">
+                      {portfolioReport.model_portfolio_return_20d.toFixed(2)}%
+                    </div>
+                    <div className="mt-1 text-xs text-slate-500">Weighted active-slot profile</div>
+                  </div>
+                  <div className="interactive-row">
+                    <div className="eyebrow">Email Brief</div>
+                    <div className="mt-2 text-sm font-semibold text-white">
+                      {portfolioReport.email_subject}
+                    </div>
+                    <div className="mt-1 text-xs text-slate-500">Daily summary draft</div>
+                  </div>
+                  <div className="interactive-row">
+                    <div className="eyebrow">Top Risk Count</div>
+                    <div className="mt-2 text-base font-semibold text-white">
+                      {portfolioReport.top_risks.length}
+                    </div>
+                    <div className="mt-1 text-xs text-slate-500">Current portfolio cautions</div>
+                  </div>
+                </div>
+
+                <div className="interactive-row">
+                  <div className="text-sm font-semibold text-white">{portfolioReport.headline}</div>
+                  <div className="mt-2 text-sm leading-7 text-slate-300">{portfolioReport.summary}</div>
+                  <div className="mt-3 text-xs leading-6 text-slate-500">{portfolioReport.email_preview}</div>
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="interactive-row">
+                    <div className="text-sm font-semibold text-white">Benchmark Comparison</div>
+                    <div className="mt-3 space-y-2">
+                      {portfolioReport.benchmark_comparison.map((item) => (
+                        <div key={`${item.label}-${item.symbol}`} className="flex items-center justify-between gap-3 text-sm">
+                          <div className="text-slate-300">
+                            {item.label} <span className="text-slate-500">({item.symbol})</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-medium text-white">{item.return_percent.toFixed(2)}%</div>
+                            <div className="text-xs text-slate-500">
+                              Delta {item.comparison_delta_percent.toFixed(2)}%
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="interactive-row">
+                    <div className="text-sm font-semibold text-white">Rebalance Notes</div>
+                    <div className="mt-3 space-y-2 text-sm leading-7 text-slate-300">
+                      {portfolioReport.rebalance_notes.map((note) => (
+                        <div key={note}>{note}</div>
+                      ))}
+                    </div>
+                    {portfolioReport.top_risks.length ? (
+                      <div className="mt-4 border-t border-white/10 pt-3">
+                        <div className="text-xs uppercase tracking-[0.16em] text-slate-500">Top risks</div>
+                        <div className="mt-2 space-y-2 text-sm leading-6 text-slate-400">
+                          {portfolioReport.top_risks.map((risk) => (
+                            <div key={risk}>{risk}</div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {executionPreview ? (
+              <div className="space-y-3">
+                <div className="interactive-row">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-semibold text-white">Execution Preview</div>
+                      <div className="mt-2 text-sm leading-7 text-slate-300">
+                        Broker mode {executionPreview.alpaca_status.mode} | status{" "}
+                        {executionPreview.alpaca_status.account_status}
+                      </div>
+                    </div>
+                    <div className="desk-chip mono">
+                      {executionPreview.alpaca_status.connected ? "Broker Connected" : "Preview Only"}
+                    </div>
+                  </div>
+
+                  <div className="mt-3 grid gap-2 text-xs text-slate-400 sm:grid-cols-3">
+                    <div>Equity {executionPreview.alpaca_status.equity.toFixed(2)}</div>
+                    <div>Buying Power {executionPreview.alpaca_status.buying_power.toFixed(2)}</div>
+                    <div>Positions {executionPreview.alpaca_status.positions_count}</div>
+                  </div>
+                  <div className="mt-3 text-xs leading-6 text-slate-500">
+                    {executionPreview.alpaca_status.message}
+                  </div>
+                </div>
+
+                {loadingExecution ? (
+                  <div className="interactive-row text-sm text-slate-300">
+                    Building execution preview and target allocations...
+                  </div>
+                ) : null}
+
+                <div className="interactive-row">
+                  <div className="text-sm font-semibold text-white">Proposed Actions</div>
+                  <div className="mt-3 space-y-2">
+                    {executionPreview.proposed_actions.length ? (
+                      executionPreview.proposed_actions.map((action) => (
+                        <div key={`${action.action}-${action.symbol}`} className="flex items-start justify-between gap-3 rounded-[14px] border border-white/10 bg-white/[0.03] px-3 py-3">
+                          <div>
+                            <div className="text-sm font-semibold text-white">{action.symbol}</div>
+                            <div className="mt-1 text-xs leading-6 text-slate-400">
+                              {action.rationale}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className={`rounded-full border px-2 py-1 text-xs ${actionTone(action.action)}`}>
+                              {action.action.toUpperCase()}
+                            </div>
+                            <div className="mt-2 text-xs text-slate-500">
+                              {action.current_weight_percent.toFixed(2)}% to{" "}
+                              {action.target_weight_percent.toFixed(2)}%
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              Delta {action.delta_weight_percent.toFixed(2)}%
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-sm text-slate-300">
+                        No execution changes are being proposed right now.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {executionPreview.warnings.length ? (
+                  <div className="interactive-row border-amber-500/20 bg-amber-500/10 text-sm text-amber-100">
+                    {executionPreview.warnings.join(" | ")}
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </div>

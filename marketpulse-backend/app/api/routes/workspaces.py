@@ -6,14 +6,20 @@ from app.models.auth import AuthUser
 from app.models.workflow import (
     AlertCreateRequest,
     MemoUpsertRequest,
+    WorkspaceExecutionPreviewResponse,
     WorkspaceCreateRequest,
     WorkspaceDetailResponse,
     WorkspacePortfolioResponse,
+    WorkspacePortfolioReportResponse,
     WorkspaceSummary,
     WorkspaceUpdateRequest,
     WatchlistAddRequest,
 )
 from app.services.portfolio_service import build_workspace_portfolio
+from app.services.portfolio_report_service import (
+    build_workspace_execution_preview,
+    build_workspace_portfolio_report,
+)
 from app.services.auth_service import get_user_for_token
 from app.services.workflow_service import (
     add_watchlist_symbol,
@@ -85,6 +91,22 @@ def workspace_detail(workspace_id: int, user: AuthUser = Depends(_require_user))
 def workspace_portfolio(workspace_id: int, user: AuthUser = Depends(_require_user)):
     try:
         return build_workspace_portfolio(user.id, workspace_id)
+    except ValueError as exc:
+        _raise_value_error(exc)
+
+
+@router.get("/{workspace_id}/portfolio/report", response_model=WorkspacePortfolioReportResponse)
+def workspace_portfolio_report(workspace_id: int, user: AuthUser = Depends(_require_user)):
+    try:
+        return build_workspace_portfolio_report(user.id, workspace_id)
+    except ValueError as exc:
+        _raise_value_error(exc)
+
+
+@router.get("/{workspace_id}/portfolio/execution-preview", response_model=WorkspaceExecutionPreviewResponse)
+def workspace_execution_preview(workspace_id: int, user: AuthUser = Depends(_require_user)):
+    try:
+        return build_workspace_execution_preview(user.id, workspace_id)
     except ValueError as exc:
         _raise_value_error(exc)
 

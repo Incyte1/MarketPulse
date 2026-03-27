@@ -60,6 +60,7 @@ export type PortfolioCandidate = {
   disposition: "buy" | "hold" | "sell";
   slot_status: string;
   rank?: number | null;
+  target_weight_percent: number;
   conviction_score: number;
   bias_label: string;
   confidence_label: string;
@@ -73,6 +74,20 @@ export type PortfolioCandidate = {
   regime_state: string;
   support_level: number;
   resistance_level: number;
+  sector: string;
+  subsector: string;
+  benchmark_symbol: string;
+  sector_etf: string;
+  return_5d: number;
+  return_20d: number;
+  return_50d: number;
+  benchmark_return_20d: number;
+  sector_return_20d: number;
+  relative_strength_20d: number;
+  relative_strength_sector_20d: number;
+  volume_ratio_20d: number;
+  atr_percent: number;
+  market_tone: string;
   primary_driver: string;
   summary: string;
   reasons: string[];
@@ -94,6 +109,60 @@ export type WorkspacePortfolioResponse = {
   hold_queue: PortfolioCandidate[];
   sell_queue: PortfolioCandidate[];
   errors: string[];
+};
+
+export type BenchmarkSnapshot = {
+  label: string;
+  symbol: string;
+  return_percent: number;
+  comparison_delta_percent: number;
+};
+
+export type RebalanceAction = {
+  symbol: string;
+  action: string;
+  target_weight_percent: number;
+  current_weight_percent: number;
+  delta_weight_percent: number;
+  rationale: string;
+};
+
+export type AlpacaStatusInfo = {
+  configured: boolean;
+  mode: string;
+  connected: boolean;
+  account_status: string;
+  equity: number;
+  buying_power: number;
+  cash: number;
+  positions_count: number;
+  message: string;
+};
+
+export type WorkspacePortfolioReportResponse = {
+  workspace_id: number;
+  workspace_name: string;
+  generated_at: string;
+  headline: string;
+  summary: string;
+  model_portfolio_return_20d: number;
+  benchmark_comparison: BenchmarkSnapshot[];
+  top_opportunities: PortfolioCandidate[];
+  top_risks: string[];
+  rebalance_notes: string[];
+  email_subject: string;
+  email_preview: string;
+};
+
+export type WorkspaceExecutionPreviewResponse = {
+  workspace_id: number;
+  workspace_name: string;
+  generated_at: string;
+  alpaca_status: AlpacaStatusInfo;
+  target_slots: number;
+  target_universe: PortfolioCandidate[];
+  proposed_actions: RebalanceAction[];
+  warnings: string[];
 };
 
 async function workspaceRequest<T>(path: string, token: string, init?: RequestInit): Promise<T> {
@@ -140,6 +209,32 @@ export async function fetchWorkspacePortfolio(
 ): Promise<WorkspacePortfolioResponse> {
   return workspaceRequest<WorkspacePortfolioResponse>(
     `/api/workspaces/${workspaceId}/portfolio`,
+    token,
+    {
+      method: "GET",
+    }
+  );
+}
+
+export async function fetchWorkspacePortfolioReport(
+  token: string,
+  workspaceId: number
+): Promise<WorkspacePortfolioReportResponse> {
+  return workspaceRequest<WorkspacePortfolioReportResponse>(
+    `/api/workspaces/${workspaceId}/portfolio/report`,
+    token,
+    {
+      method: "GET",
+    }
+  );
+}
+
+export async function fetchWorkspaceExecutionPreview(
+  token: string,
+  workspaceId: number
+): Promise<WorkspaceExecutionPreviewResponse> {
+  return workspaceRequest<WorkspaceExecutionPreviewResponse>(
+    `/api/workspaces/${workspaceId}/portfolio/execution-preview`,
     token,
     {
       method: "GET",

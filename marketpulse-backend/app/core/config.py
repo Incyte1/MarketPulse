@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     ai_news_article_limit_macro: int = 0
     auth_db_path: str = "marketpulse_auth.db"
 
+    alpaca_api_key: str = ""
+    alpaca_api_secret: str = ""
+    alpaca_base_url: str = "https://paper-api.alpaca.markets"
+    alpaca_trading_mode: str = "paper"
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     def resolve_data_path(self, path_value: str) -> Path:
