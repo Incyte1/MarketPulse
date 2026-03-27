@@ -9,7 +9,7 @@ type Props = {
 
 export default function BrandLockup({ compact = false }: Props) {
   return (
-    <Link href="/" className="flex min-w-0 shrink-0 flex-col gap-1.5 text-left">
+    <Link href="/" prefetch={false} className="flex min-w-0 shrink-0 flex-col gap-1.5 text-left">
       <span
         className={`mono uppercase tracking-[0.28em] text-[var(--text-dim)] ${
           compact ? "text-[9px]" : "text-[10px] sm:text-[11px]"

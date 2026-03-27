@@ -131,10 +131,10 @@ export default function HomePage() {
           <div className="flex items-start justify-between gap-4">
             <BrandLockup />
             <div className="flex flex-wrap items-center gap-3">
-              <Link href="/login" className="action-button-secondary">
+              <Link href="/login" prefetch={false} className="action-button-secondary">
                 Sign In
               </Link>
-              <Link href={primaryHref} className="action-button">
+              <Link href={primaryHref} prefetch={false} className="action-button">
                 {primaryLabel}
               </Link>
             </div>
@@ -154,10 +154,10 @@ export default function HomePage() {
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={primaryHref} className="action-button">
+              <Link href={primaryHref} prefetch={false} className="action-button">
                 {primaryLabel}
               </Link>
-              <Link href="/login" className="action-button-secondary">
+              <Link href="/login" prefetch={false} className="action-button-secondary">
                 Enter Existing Desk
               </Link>
             </div>
@@ -240,10 +240,10 @@ export default function HomePage() {
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href={primaryHref} className="action-button">
+            <Link href={primaryHref} prefetch={false} className="action-button">
               {primaryLabel}
             </Link>
-            <Link href="/login" className="action-button-secondary">
+            <Link href="/login" prefetch={false} className="action-button-secondary">
               Sign In
             </Link>
           </div>

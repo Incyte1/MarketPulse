@@ -782,10 +782,10 @@ export default function WorkspaceDock({
 
           <div className="px-4 py-4">
             <div className="flex gap-3">
-            <Link href="/login" className="action-button-secondary">
+            <Link href="/login" prefetch={false} className="action-button-secondary">
               Login
             </Link>
-            <Link href="/register" className="action-button">
+            <Link href="/register" prefetch={false} className="action-button">
               Create {brand.name} Account
             </Link>
             </div>

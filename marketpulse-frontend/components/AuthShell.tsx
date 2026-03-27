@@ -40,7 +40,7 @@ export default function AuthShell({
       <div className="relative z-20 flex min-h-[calc(100svh-32px)] flex-col">
         <header className="flex items-start justify-between gap-4">
           <BrandLockup />
-          <Link href={altHref} className="action-button-secondary">
+          <Link href={altHref} prefetch={false} className="action-button-secondary">
             {altLabel}
           </Link>
         </header>
@@ -73,7 +73,11 @@ export default function AuthShell({
 
               <div className="section-rule mt-6 text-sm text-[var(--text-soft)]">
                 {altPrompt}{" "}
-                <Link href={altHref} className="text-[var(--accent)] underline underline-offset-4">
+                <Link
+                  href={altHref}
+                  prefetch={false}
+                  className="text-[var(--accent)] underline underline-offset-4"
+                >
                   {altLabel}
                 </Link>
               </div>
