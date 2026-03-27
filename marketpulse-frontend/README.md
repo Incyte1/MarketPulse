@@ -63,16 +63,16 @@ npm run deploy
 
 Production builds use `.env.production`, which keeps frontend API calls same-origin so the Worker can proxy `/api/*` into the backend tunnel.
 
-The live Worker now reaches the backend through a Workers VPC service binding backed by the `unveni-api` Cloudflare Tunnel, which points to `http://127.0.0.1:8000`.
+The live Worker now proxies `/api/*` to the hosted Render backend at `https://unveni-api.onrender.com` through the `API_ORIGIN` Worker variable defined in `wrangler.jsonc`.
 
 ## Hosted backend option
-If you move the FastAPI backend onto a real server, set a Worker environment variable named `API_ORIGIN` to that public backend origin, for example:
+If you move the FastAPI backend to a different host later, update the Worker environment variable named `API_ORIGIN` to that public backend origin, for example:
 
 ```text
 API_ORIGIN=https://unveni-api.onrender.com
 ```
 
-When `API_ORIGIN` is set, the Worker proxies `/api/*` to that origin and no longer depends on the local Cloudflare tunnel.
+When `API_ORIGIN` is set, the Worker proxies `/api/*` to that origin and no longer depends on a local Cloudflare tunnel.
 
 Then redeploy the Worker:
 

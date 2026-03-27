@@ -11,13 +11,9 @@
     "not_found_handling": "404-page",
     "run_worker_first": true
   },
-  "vpc_services": [
-    {
-      "binding": "PRIVATE_API",
-      "service_id": "019d2852-52e3-72c2-8ddc-a1276dbc3563",
-      "remote": true
-    }
-  ],
+  "vars": {
+    "API_ORIGIN": "https://unveni-api.onrender.com"
+  },
   "routes": [
     {
       "pattern": "unveni.com",
