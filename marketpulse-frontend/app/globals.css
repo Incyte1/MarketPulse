@@ -683,6 +683,100 @@ textarea {
   animation: shimmer 1.8s linear infinite;
 }
 
+.safe-shell {
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding-left: max(16px, env(safe-area-inset-left));
+}
+
+.safe-top {
+  padding-top: max(16px, env(safe-area-inset-top));
+}
+
+.safe-bottom {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.marketing-viewport {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 14% 16%, rgba(154, 246, 207, 0.08), transparent 20%),
+    radial-gradient(circle at 86% 8%, rgba(158, 184, 255, 0.08), transparent 22%),
+    linear-gradient(180deg, #07090d 0%, #0b0f15 48%, #10161f 100%);
+}
+
+.product-plane {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.015), transparent 20%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.014) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.014) 1px, transparent 1px),
+    linear-gradient(135deg, rgba(154, 246, 207, 0.05), transparent 42%);
+  background-size: auto, 80px 80px, 80px 80px, auto;
+}
+
+.product-plane::before,
+.product-plane::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.product-plane::before {
+  background:
+    linear-gradient(90deg, rgba(7, 9, 13, 0.9) 0%, rgba(7, 9, 13, 0.72) 28%, rgba(7, 9, 13, 0.2) 58%, rgba(7, 9, 13, 0.74) 100%);
+}
+
+.product-plane::after {
+  background:
+    radial-gradient(circle at 70% 62%, rgba(154, 246, 207, 0.08), transparent 28%),
+    radial-gradient(circle at 78% 28%, rgba(158, 184, 255, 0.08), transparent 18%);
+}
+
+.market-marquee {
+  position: absolute;
+  right: 0;
+  bottom: clamp(22px, 3vw, 36px);
+  left: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 14px;
+  animation: marqueeMove 24s linear infinite;
+}
+
+.quote-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(210, 224, 242, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #edf3fb;
+  white-space: nowrap;
+}
+
+.section-rule {
+  border-top: 1px solid rgba(210, 224, 242, 0.1);
+  padding-top: 18px;
+}
+
+.drift-slow {
+  animation: driftSlow 18s ease-in-out infinite alternate;
+}
+
 @media (max-width: 1023px) {
   .terminal-shell {
     grid-template-columns: 1fr;
@@ -706,5 +800,25 @@ textarea {
   .rail-symbol {
     min-height: 48px;
     min-width: 64px;
+  }
+}
+
+@keyframes marqueeMove {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes driftSlow {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(-1.5%, 1.5%, 0) scale(1.03);
   }
 }

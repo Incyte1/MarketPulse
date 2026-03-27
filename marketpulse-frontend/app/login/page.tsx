@@ -33,7 +33,7 @@ export default function LoginPage() {
   return (
     <AuthShell
       eyebrow="Secure Sign-In"
-      title="Re-enter the desk without losing context."
+      title="Return to the active desk."
       subtitle={brand.loginPrompt}
       altHref="/register"
       altLabel="Create an account"
@@ -42,17 +42,11 @@ export default function LoginPage() {
       <div>
         <div className="eyebrow">Desk Access</div>
         <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
-          Sign in to continue.
+          Sign in and restore your workspace.
         </div>
-        <p className="mt-3 text-sm leading-6 text-slate-300">
-          Your account, workspaces, alerts, and memo state are restored before the desk opens.
+        <p className="mt-3 text-sm leading-7 text-slate-300">
+          Workspaces, alerts, memo state, and the current desk context come back before the product opens.
         </p>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        <span className="desk-chip mono">Signal queues</span>
-        <span className="desk-chip mono">Portfolio memory</span>
-        <span className="desk-chip mono">Execution prep</span>
       </div>
 
       <form

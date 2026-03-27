@@ -5,46 +5,50 @@ import { useEffect, useState } from "react";
 import BrandLockup from "@/components/BrandLockup";
 import { restoreSession, type AuthSession } from "@/lib/auth";
 
-const SIGNAL_LAYERS = [
+const HERO_QUOTES = [
+  "SPY 645.09  0.00%",
+  "QQQ 558.74  +0.32%",
+  "NVDA 1014.63  +1.18%",
+  "MSFT 492.11  -0.14%",
+  "AAPL 233.44  +0.27%",
+  "META 678.09  +0.61%",
+  "TSLA 292.18  -0.71%",
+  "AMD 188.45  +0.94%",
+];
+
+const SIGNAL_LOOP = [
   {
-    label: "Signal Layer",
-    title: "Multivariate inputs instead of one-note chart calls.",
+    label: "Read",
+    title: "One market read across price, catalysts, and regime.",
     copy:
-      "Price, volume, regime, relative strength, benchmark drift, sector context, and catalyst flow sit in the same read before anything is promoted.",
+      "The active symbol is interpreted with technical structure, benchmark drift, sector context, and catalyst flow in the same operating pass.",
   },
   {
-    label: "Rank Layer",
-    title: "The book is sorted at the portfolio level.",
+    label: "Rank",
+    title: "New capital gets an order instead of a pile of scores.",
     copy:
-      "Candidates are ranked against each other, not scored in isolation, so new capital has an order and weaker names can be rotated out cleanly.",
+      "Candidates are sorted against each other at the portfolio layer so buy pressure, review pressure, and replacement logic all live in one queue.",
   },
   {
-    label: "Execution Layer",
-    title: "Research turns into an action-ready queue.",
+    label: "Act",
+    title: "Research can move directly into execution prep.",
     copy:
-      "The workspace now produces target weights, benchmark comparison, daily summary language, and broker-ready previews instead of dead-end notes.",
+      "Workspaces keep watchlists, alerts, memos, benchmark-aware portfolio reports, and broker previews tied to the same desk state.",
   },
 ];
 
-const WORKFLOW_STEPS = [
-  "Read the active symbol with separate short-term and long-term engines.",
-  "Promote names into a shared watchlist and persistent workspace.",
-  "Rank the current universe into buy, review, and exit queues.",
-  "Prepare execution with benchmark-aware portfolio and broker preview.",
-];
-
-const SURFACE_POINTS = [
+const SURFACES = [
   {
-    label: "Desk",
-    copy: "Chart-first review for the active symbol, current levels, and regime.",
+    label: "Arena",
+    copy: "Chart-first review for the active symbol, live structure, and the immediate execution path.",
   },
   {
     label: "Research",
-    copy: "Ticker catalysts, macro drivers, confirmation, invalidation, and plain-English readouts.",
+    copy: "Ticker catalysts, macro drivers, plain-English reads, confirmation, and invalidation in one place.",
   },
   {
-    label: "Memory",
-    copy: "Watchlists, alerts, memos, portfolio queue, and execution preview tied to one workspace.",
+    label: "Operator",
+    copy: "Workspace memory, ranked queues, portfolio notes, and execution previews without leaving the desk.",
   },
 ];
 
@@ -73,24 +77,59 @@ export default function HomePage() {
   }, []);
 
   const primaryHref = authReady && session ? "/workspace" : "/register";
-  const primaryLabel = authReady && session ? "Open Workspace" : "Request Access";
+  const primaryLabel = authReady && session ? "Open Desk" : "Request Access";
 
   return (
-    <main className="app-shell min-h-screen px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6">
-      <div className="mx-auto max-w-[1680px] space-y-4">
-        <header className="command-shell reveal-up sticky top-3 z-30 px-4 py-4 sm:px-5 lg:px-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex min-w-0 items-center justify-between gap-4">
-              <BrandLockup />
-              <div className="hidden items-center gap-3 lg:flex">
-                <span className="desk-chip desk-chip-accent mono">
-                  <span className="status-dot" />
-                  Live Research Product
-                </span>
-                <span className="desk-chip mono">Short horizon + portfolio engine</span>
-              </div>
-            </div>
+    <main className="app-shell min-h-screen">
+      <section className="marketing-viewport safe-shell relative">
+        <div className="product-plane">
+          <div className="absolute inset-y-[10%] right-[4%] left-[42%] hidden lg:block">
+            <div className="drift-slow absolute inset-0">
+              <div className="absolute top-0 right-0 left-0 h-[54px] border-y border-white/10 bg-black/20" />
+              <div className="absolute top-[76px] left-0 right-[18%] bottom-[18%] border border-white/10 bg-black/12" />
+              <div className="absolute top-[76px] right-0 w-[15%] bottom-[18%] border border-white/10 bg-black/10" />
+              <div className="absolute left-0 right-0 bottom-0 h-[13%] border-y border-white/10 bg-black/18" />
 
+              {[16, 24, 20, 32, 28, 44, 38, 52, 48, 60, 56, 64].map((value, index) => (
+                <div
+                  key={`hero-bar-${value}-${index}`}
+                  className="absolute bottom-[24%] w-[1.2%] bg-[rgba(154,246,207,0.7)]"
+                  style={{
+                    left: `${10 + index * 5.4}%`,
+                    height: `${value}%`,
+                    opacity: index % 3 === 0 ? 0.35 : 0.85,
+                  }}
+                />
+              ))}
+
+              {[12, 18, 10, 22, 16, 14, 24, 18, 28, 20, 26, 24].map((value, index) => (
+                <div
+                  key={`hero-line-${value}-${index}`}
+                  className="absolute top-[18%] h-px bg-[rgba(210,224,242,0.15)]"
+                  style={{
+                    left: `${6 + index * 6.8}%`,
+                    width: `${8 + value}%`,
+                    transform: `translateY(${index * 32}px)`,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="market-marquee">
+            <div className="marquee-track">
+              {[...HERO_QUOTES, ...HERO_QUOTES].map((item, index) => (
+                <div key={`${item}-${index}`} className="quote-chip mono">
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <header className="relative z-20">
+          <div className="flex items-start justify-between gap-4">
+            <BrandLockup />
             <div className="flex flex-wrap items-center gap-3">
               <Link href="/login" className="action-button-secondary">
                 Sign In
@@ -102,180 +141,114 @@ export default function HomePage() {
           </div>
         </header>
 
-        <section className="market-plane reveal-up reveal-delay-1 relative -mx-3 overflow-hidden border-y border-[var(--line)] px-3 py-8 sm:-mx-4 sm:px-4 lg:-mx-6 lg:px-6 lg:py-10">
-          <div className="hero-orbit hidden xl:block" />
-
-          <div className="mx-auto grid max-w-[1680px] gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(440px,0.85fr)] xl:items-end">
-            <div className="relative z-10 max-w-[760px]">
-              <div className="desk-chip desk-chip-info mono">Trading workspace rework in motion</div>
-              <h1 className="poster-text mt-6 max-w-[820px] text-[3rem] font-semibold text-white sm:text-[4.4rem] lg:text-[6.2rem]">
-                A sharper trading desk, not a soft dashboard.
-              </h1>
-              <p className="mt-6 max-w-[650px] text-base leading-8 text-[var(--text-soft)] sm:text-lg">
-                Unveni is moving toward a tighter market-product feel: stronger chart hierarchy,
-                cleaner signal ranking, portfolio-aware review, and execution context that feels
-                closer to a real trading platform than a styled research app.
-              </p>
-
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link href={primaryHref} className="action-button">
-                  {primaryLabel}
-                </Link>
-                <Link href="/login" className="action-button-secondary">
-                  Enter Existing Desk
-                </Link>
-              </div>
-
-              <div className="mt-8 flex flex-wrap gap-2">
-                <span className="desk-chip mono">Short-term / long-term engines</span>
-                <span className="desk-chip mono">Portfolio rank engine</span>
-                <span className="desk-chip mono">Daily summary + execution preview</span>
-              </div>
+        <div className="relative z-20 flex min-h-[calc(100svh-120px)] items-end pb-16 pt-16 sm:pb-20 lg:pb-24">
+          <div className="max-w-[720px]">
+            <div className="poster-text text-[clamp(4.5rem,13vw,10rem)] font-semibold text-white">
+              Unveni
             </div>
+            <h1 className="mt-4 max-w-[11ch] text-[clamp(2rem,5vw,4.4rem)] font-semibold leading-[0.96] tracking-[-0.07em] text-white">
+              Research and execution on one market operating surface.
+            </h1>
+            <p className="mt-6 max-w-[620px] text-base leading-8 text-[var(--text-soft)] sm:text-lg">
+              Multivariate reads, ranked portfolio queues, persistent workspace memory, and broker-ready execution context without breaking the trading loop.
+            </p>
 
-            <div className="relative z-10 grid gap-3">
-              <div className="ticker-lane">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="eyebrow">Market Stack</div>
-                    <div className="mt-2 text-xl font-semibold text-white">Multivariate signal system</div>
-                  </div>
-                  <span className="desk-chip desk-chip-accent mono">Live</span>
-                </div>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="metric-cell">
-                  <div className="eyebrow">Research Inputs</div>
-                  <div className="mt-3 text-3xl font-semibold text-white">Price + Volume</div>
-                  <div className="mt-2 text-sm leading-7 text-[var(--text-soft)]">
-                    Relative strength, market tone, and sector context are all pushed into the
-                    same read.
-                  </div>
-                </div>
-
-                <div className="metric-cell">
-                  <div className="eyebrow">Book Logic</div>
-                  <div className="mt-3 text-3xl font-semibold text-white">Ranked Queue</div>
-                  <div className="mt-2 text-sm leading-7 text-[var(--text-soft)]">
-                    Buy, review, and exit candidates are sorted against each other at the
-                    portfolio layer.
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="ticker-lane flex items-center justify-between gap-3">
-                  <div>
-                    <div className="eyebrow">Portfolio</div>
-                    <div className="mt-1 text-sm text-white">Target weights, benchmark spread, daily brief</div>
-                  </div>
-                  <div className="text-right text-sm">
-                    <div className="signal-positive font-semibold">MODEL + EXECUTION</div>
-                    <div className="text-[var(--text-dim)]">Report + broker preview</div>
-                  </div>
-                </div>
-
-                <div className="ticker-lane flex items-center justify-between gap-3">
-                  <div>
-                    <div className="eyebrow">Workspace</div>
-                    <div className="mt-1 text-sm text-white">Watchlists, alerts, memo memory, symbol sync</div>
-                  </div>
-                  <div className="text-right text-sm">
-                    <div className="text-white font-semibold">PERSISTENT</div>
-                    <div className="text-[var(--text-dim)]">Desk continuity</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-          <div className="frame-shell reveal-up reveal-delay-2 px-5 py-6 sm:px-6 lg:px-8 lg:py-8">
-            <div className="eyebrow">Architecture</div>
-            <div className="mt-3 max-w-[720px] text-3xl font-semibold text-white sm:text-4xl">
-              Three layers that push the product closer to a real trading platform.
-            </div>
-
-            <div className="mt-6 grid gap-3">
-              {SIGNAL_LAYERS.map((item) => (
-                <div key={item.title} className="interactive-row">
-                  <div className="eyebrow">{item.label}</div>
-                  <div className="mt-2 text-lg font-semibold text-white">{item.title}</div>
-                  <div className="mt-2 max-w-[620px] text-sm leading-7 text-[var(--text-soft)]">
-                    {item.copy}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="frame-shell reveal-up reveal-delay-3 px-5 py-6 sm:px-6 lg:px-8 lg:py-8">
-            <div className="eyebrow">Cadence</div>
-            <div className="mt-3 text-3xl font-semibold text-white sm:text-4xl">
-              The operating rhythm should feel deliberate from first scan to trade prep.
-            </div>
-
-            <div className="mt-6 space-y-3">
-              {WORKFLOW_STEPS.map((step, index) => (
-                <div key={step} className="interactive-row flex items-start gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold text-white">
-                    {String(index + 1).padStart(2, "0")}
-                  </div>
-                  <div className="pt-1 text-sm leading-7 text-[var(--text-soft)]">{step}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="frame-shell reveal-up reveal-delay-3 px-5 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <div className="grid gap-8 xl:grid-cols-[0.95fr_1.05fr] xl:items-start">
-            <div>
-              <div className="eyebrow">Surface Model</div>
-              <div className="mt-3 max-w-[640px] text-3xl font-semibold text-white sm:text-4xl">
-                One product, three jobs: read the tape, work the thesis, manage the book.
-              </div>
-              <div className="mt-4 max-w-[620px] text-sm leading-8 text-[var(--text-soft)]">
-                The redesign is moving the app away from generalized panels and toward a clearer
-                product hierarchy: the chart is primary, the research feed is contextual, and the
-                workspace memory is always available without taking over the screen.
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              {SURFACE_POINTS.map((item) => (
-                <div key={item.label} className="metric-cell">
-                  <div className="eyebrow">{item.label}</div>
-                  <div className="mt-3 text-base font-semibold text-white">{item.label} Surface</div>
-                  <div className="mt-3 text-sm leading-7 text-[var(--text-soft)]">{item.copy}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6">
-            <div>
-              <div className="text-xl font-semibold text-white">Open the new desk and stress the workflow.</div>
-              <div className="mt-2 text-sm leading-7 text-[var(--text-soft)]">
-                The frontend is staying on Next.js and TypeScript because that is already the right
-                web stack for a premium trading UI. If we ever replace a language, it would be for
-                backend performance services, not because the frontend stack is weak.
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap gap-3">
               <Link href={primaryHref} className="action-button">
                 {primaryLabel}
               </Link>
               <Link href="/login" className="action-button-secondary">
-                Sign In
+                Enter Existing Desk
               </Link>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+
+      <section className="safe-shell bg-[linear-gradient(180deg,#0f151d_0%,#0a0f15_100%)]">
+        <div className="mx-auto max-w-[1480px] py-16 sm:py-20 lg:py-24">
+          <div className="max-w-[820px]">
+            <div className="eyebrow">Signal Loop</div>
+            <h2 className="mt-4 text-[clamp(2.2rem,4.6vw,4rem)] font-semibold tracking-[-0.06em] text-white">
+              One market loop from read to ranked action.
+            </h2>
+            <p className="mt-5 max-w-[640px] text-base leading-8 text-[var(--text-soft)]">
+              Public copy should explain the operating loop, not decorate it. The platform exists to read the market, sort the book, and move the desk closer to action.
+            </p>
+          </div>
+
+          <div className="mt-12">
+            {SIGNAL_LOOP.map((item) => (
+              <div key={item.label} className="section-rule grid gap-4 py-6 lg:grid-cols-[180px_minmax(0,1fr)]">
+                <div className="mono text-xs uppercase tracking-[0.22em] text-[var(--text-dim)]">
+                  {item.label}
+                </div>
+                <div>
+                  <div className="text-2xl font-semibold tracking-[-0.04em] text-white">
+                    {item.title}
+                  </div>
+                  <div className="mt-3 max-w-[720px] text-sm leading-8 text-[var(--text-soft)]">
+                    {item.copy}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="safe-shell bg-[#07090d]">
+        <div className="mx-auto max-w-[1480px] py-16 sm:py-20 lg:py-24">
+          <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+            <div>
+              <div className="eyebrow">Inside The Product</div>
+              <h2 className="mt-4 text-[clamp(2.2rem,4.4vw,4rem)] font-semibold tracking-[-0.06em] text-white">
+                Three surfaces. One memory.
+              </h2>
+              <p className="mt-5 max-w-[560px] text-base leading-8 text-[var(--text-soft)]">
+                The chart arena stays primary, the research surface stays contextual, and the operator layer manages queue logic and execution without taking over the desk.
+              </p>
+            </div>
+
+            <div className="border-t border-white/10">
+              {SURFACES.map((item) => (
+                <div
+                  key={item.label}
+                  className="grid gap-4 border-b border-white/10 py-6 lg:grid-cols-[180px_minmax(0,1fr)]"
+                >
+                  <div className="text-xl font-semibold tracking-[-0.04em] text-white">
+                    {item.label}
+                  </div>
+                  <div className="text-sm leading-8 text-[var(--text-soft)]">{item.copy}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="safe-shell bg-[linear-gradient(180deg,#0f151d_0%,#071018_100%)]">
+        <div className="mx-auto max-w-[1480px] py-16 sm:py-20 lg:py-24">
+          <div className="max-w-[820px]">
+            <div className="eyebrow">Open The Desk</div>
+            <h2 className="mt-4 text-[clamp(2.2rem,4.4vw,4rem)] font-semibold tracking-[-0.06em] text-white">
+              Start with the current workspace, not a marketing demo.
+            </h2>
+            <p className="mt-5 max-w-[620px] text-base leading-8 text-[var(--text-soft)]">
+              The best proof is the product itself. Open the desk, move through the live read, and stress the queue, memo, and execution flow directly.
+            </p>
+          </div>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href={primaryHref} className="action-button">
+              {primaryLabel}
+            </Link>
+            <Link href="/login" className="action-button-secondary">
+              Sign In
+            </Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

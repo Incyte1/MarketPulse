@@ -805,7 +805,7 @@ export default function WorkspaceDock({
               Workspace switching, ranked queue, and execution state
             </div>
           </div>
-          {detail ? <div className="desk-chip mono">{detail.workspace.name}</div> : null}
+          {detail ? <div className="desk-chip mono">Updated {formatTime(detail.workspace.updated_at)}</div> : null}
         </div>
 
         <div className="border-b border-white/8 overflow-x-auto">
@@ -842,49 +842,56 @@ export default function WorkspaceDock({
           </div>
         </div>
 
+        <div className="border-b border-white/8 px-4 py-3">
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className="action-button-secondary" onClick={handleAddCurrentSymbol}>
+              Add {symbol}
+            </button>
+            <button
+              type="button"
+              className="action-button-secondary"
+              onClick={() => onActivateHorizon(horizon === "short_term" ? "long_term" : "short_term")}
+            >
+              Switch to {horizon === "short_term" ? "Long Horizon" : "Short Horizon"}
+            </button>
+          </div>
+        </div>
+
         <div className="terminal-pair-grid sm:grid-cols-2">
           <div className="terminal-pair">
             <div>
               <div className="terminal-kpi-label">Coverage</div>
               <div className="mt-2 text-sm font-semibold text-white">{detail?.watchlist.length ?? 0} names</div>
             </div>
-            <button type="button" className="terminal-pill" onClick={handleAddCurrentSymbol}>
-              Add {symbol}
-            </button>
+            <div className="text-sm text-[var(--text-soft)]">{detail?.workspace.selected_symbol || symbol}</div>
           </div>
           <div className="terminal-pair">
             <div>
               <div className="terminal-kpi-label">Alerts</div>
               <div className="mt-2 text-sm font-semibold text-white">{detail?.alerts.length ?? 0} armed</div>
             </div>
-            <div className="text-sm text-[var(--text-soft)]">{memoSourceCount} memo sources</div>
+            <div className="text-sm text-[var(--text-soft)]">{formatHorizon(horizon)}</div>
+          </div>
+          <div className="terminal-pair">
+            <div>
+              <div className="terminal-kpi-label">Memory</div>
+              <div className="mt-2 text-sm font-semibold text-white">{memoSourceCount} sources</div>
+            </div>
+            <div className="text-sm text-[var(--text-soft)]">
+              {detail?.memo.updated_at ? "Saved" : "Draft only"}
+            </div>
           </div>
           <div className="terminal-pair">
             <div>
               <div className="terminal-kpi-label">Portfolio</div>
               <div className="mt-2 text-sm font-semibold text-white">{portfolio?.buy_queue.length ?? 0} buys</div>
             </div>
-            <div className="text-sm text-[var(--text-soft)]">
-              {portfolio ? `${portfolio.capacity_limit} slots` : "Syncing"}
-            </div>
-          </div>
-          <div className="terminal-pair">
-            <div>
-              <div className="terminal-kpi-label">Selection</div>
-              <div className="mt-2 text-sm font-semibold text-white">{symbol}</div>
-            </div>
-            <button
-              type="button"
-              className="terminal-pill"
-              onClick={() => onActivateHorizon(horizon === "short_term" ? "long_term" : "short_term")}
-            >
-              {formatHorizon(horizon)}
-            </button>
+            <div className="text-sm text-[var(--text-soft)]">{portfolio ? `${portfolio.capacity_limit} slots` : "Syncing"}</div>
           </div>
         </div>
 
         <div className="border-b border-white/8 px-3 py-3">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             {(["overview", "portfolio", "watchlist", "alerts", "memo"] as DockTab[]).map((tab) => (
               <button
                 key={tab}
@@ -897,7 +904,7 @@ export default function WorkspaceDock({
                   : tab === "portfolio"
                     ? "Queue"
                     : tab === "watchlist"
-                      ? "Coverage"
+                      ? "List"
                       : tab === "alerts"
                         ? "Alerts"
                         : "Memo"}

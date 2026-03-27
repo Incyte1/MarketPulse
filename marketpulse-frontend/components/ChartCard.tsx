@@ -103,8 +103,9 @@ function normalizeSymbol(symbol: string): string {
   return prefix ? `${prefix}:${upper}` : upper;
 }
 
-function readable(value?: string | null) {
-  return (value || "Unavailable").replaceAll("_", " ");
+function pretty(value?: string | null) {
+  if (!value) return "Pending";
+  return value.replaceAll("_", " ").replace(/\b\w/g, (match) => match.toUpperCase());
 }
 
 export default function ChartCard({
@@ -128,7 +129,7 @@ export default function ChartCard({
   const price = analysis?.price_context.current_price ?? null;
   const change = analysis?.price_context.daily_change_percent ?? 0;
   const technical = analysis?.technical_context;
-  const regime = readable(analysis?.professional_analysis.regime);
+  const regime = pretty(analysis?.professional_analysis.regime);
   const workflowLabel = horizon === "short_term" ? "Execution Deck" : "Thesis Deck";
   const basisInterval = technical?.data_source_interval || interval;
 
@@ -191,78 +192,83 @@ export default function ChartCard({
   }, [chartId, tvInterval, tvSymbol]);
 
   return (
-    <section className="frame-shell reveal-up reveal-delay-1 overflow-hidden p-0">
-      <div className="border-b border-white/10 px-4 py-4 lg:px-5">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="desk-chip desk-chip-accent mono">{workflowLabel}</span>
-              <span className="desk-chip mono">
-                {range} / {basisInterval}
-              </span>
-              <span className="desk-chip mono">{regime}</span>
-            </div>
+    <section className="terminal-panel reveal-up reveal-delay-1 overflow-hidden">
+      <div className="terminal-header">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="desk-chip desk-chip-accent mono">{workflowLabel}</span>
+            <span className="desk-chip mono">
+              {range} / {basisInterval}
+            </span>
+            <span className="desk-chip mono">{regime}</span>
+          </div>
 
-            <div className="mt-5 flex flex-wrap items-end justify-between gap-4">
-              <div className="min-w-0">
-                <div className="eyebrow">Active Chart</div>
-                <div className="mt-2 flex items-end gap-3">
-                  <div className="text-[2.35rem] font-semibold tracking-[-0.08em] text-white sm:text-[3rem] lg:text-[3.85rem]">
-                    {symbol.toUpperCase()}
-                  </div>
-                  <div className="pb-2 text-xs uppercase tracking-[0.22em] text-[var(--text-dim)]">
-                    {analysis?.market_status || "loading"}
-                  </div>
-                </div>
-                <div className="mt-2 truncate text-sm text-[var(--text-soft)]">
-                  {analysis?.company_name || "Loading company profile"}
-                </div>
+          <div className="mt-3 flex flex-wrap items-end gap-3">
+            <div className="text-[2rem] font-semibold tracking-[-0.08em] text-white sm:text-[2.5rem]">
+              {symbol.toUpperCase()}
+            </div>
+            <div className="pb-2 text-xs uppercase tracking-[0.22em] text-[var(--text-dim)]">
+              {analysis?.company_name || "Loading company profile"}
+            </div>
+          </div>
+
+          <div className="mt-2 text-sm leading-7 text-[var(--text-soft)]">
+            {analysis?.guidance.headline ||
+              analysis?.professional_analysis.plain_english_summary ||
+              "Loading chart context and current execution read."}
+          </div>
+        </div>
+
+        <div className="min-w-[180px] text-left xl:text-right">
+          {price != null ? (
+            <>
+              <div className="text-[1.9rem] font-semibold tracking-[-0.05em] text-white sm:text-[2.3rem]">
+                ${price.toFixed(2)}
               </div>
+              <div className={`mt-2 text-sm font-semibold ${change >= 0 ? "signal-positive" : "signal-negative"}`}>
+                {change >= 0 ? "+" : ""}
+                {change.toFixed(2)}%
+              </div>
+            </>
+          ) : null}
 
-              {price != null ? (
-                <div className="text-right">
-                  <div className="text-[1.85rem] font-semibold tracking-[-0.05em] text-white sm:text-[2.2rem] lg:text-[2.7rem]">
-                    ${price.toFixed(2)}
-                  </div>
-                  <div className={`mt-2 text-sm font-semibold ${change >= 0 ? "signal-positive" : "signal-negative"}`}>
-                    {change >= 0 ? "+" : ""}
-                    {change.toFixed(2)}%
-                  </div>
-                </div>
-              ) : null}
-            </div>
+          <div className="mt-3 text-xs uppercase tracking-[0.2em] text-[var(--text-dim)]">
+            {analysis?.market_status || "Loading"}
+          </div>
+        </div>
+      </div>
 
-            <div className="mt-5 max-w-4xl text-sm leading-7 text-[var(--text-soft)]">
-              {analysis?.guidance.summary ||
-                analysis?.professional_analysis.executive_summary ||
-                "Loading chart context and current execution read."}
+      <div className="terminal-pair-grid md:grid-cols-3">
+        <div className="terminal-pair">
+          <div>
+            <div className="terminal-kpi-label">Support / Resistance</div>
+            <div className="mt-2 text-sm font-semibold text-white">
+              {technical?.support_level?.toFixed(2) ?? "n/a"} /{" "}
+              {technical?.resistance_level?.toFixed(2) ?? "n/a"}
             </div>
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 md:grid-cols-3">
-          <div className="ticker-lane">
-            <div className="eyebrow">Support / Resistance</div>
-            <div className="mt-2 text-sm leading-7 text-white">
-              {technical?.support_level?.toFixed(2) ?? "n/a"} / {technical?.resistance_level?.toFixed(2) ?? "n/a"}
-            </div>
-          </div>
-          <div className="ticker-lane">
-            <div className="eyebrow">VWAP / ATR</div>
-            <div className="mt-2 text-sm leading-7 text-white">
+        <div className="terminal-pair">
+          <div>
+            <div className="terminal-kpi-label">VWAP / ATR</div>
+            <div className="mt-2 text-sm font-semibold text-white">
               {technical?.vwap?.toFixed(2) ?? "n/a"} / {technical?.atr?.toFixed(2) ?? "n/a"}
             </div>
           </div>
-          <div className="ticker-lane">
-            <div className="eyebrow">Range Position</div>
-            <div className="mt-2 text-sm leading-7 text-white">
-              {technical?.range_position_percent?.toFixed(1) ?? "n/a"}% | {technical?.volatility_state || "pending"}
+        </div>
+
+        <div className="terminal-pair">
+          <div>
+            <div className="terminal-kpi-label">Range Position</div>
+            <div className="mt-2 text-sm font-semibold text-white">
+              {technical?.range_position_percent?.toFixed(1) ?? "n/a"}% | {pretty(technical?.volatility_state)}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="relative h-[50svh] min-h-[380px] w-full bg-[#06111b] sm:min-h-[430px] lg:h-[56svh] lg:min-h-[540px] 2xl:h-[60svh] 2xl:min-h-[640px]">
+      <div className="relative h-[54svh] min-h-[420px] w-full bg-[#06111b] lg:min-h-[560px]">
         <div
           ref={containerRef}
           className="tradingview-widget-container relative h-full w-full overflow-hidden"
@@ -275,22 +281,33 @@ export default function ChartCard({
         ) : null}
       </div>
 
-      <div className="grid gap-3 border-t border-white/10 p-3 lg:grid-cols-2">
-        <div className="sub-surface px-4 py-4">
-          <div className="field-label">Level Basis</div>
-          <div className="mt-3 text-sm leading-7 text-slate-200">
-            {technical?.support_basis || "Support basis unavailable."}
-            <br />
-            {technical?.resistance_basis || "Resistance basis unavailable."}
+      <div className="terminal-pair-grid md:grid-cols-3">
+        <div className="terminal-pair">
+          <div>
+            <div className="terminal-kpi-label">Level Basis</div>
+            <div className="mt-2 text-sm leading-7 text-slate-200">
+              {technical?.support_basis || "Support basis unavailable."}
+            </div>
           </div>
         </div>
 
-        <div className="sub-surface px-4 py-4">
-          <div className="field-label">Engine Status</div>
-          <div className="mt-3 text-sm leading-7 text-slate-200">
-            {technical?.calibration_window || "Calibration pending."}
-            <br />
-            Cached candles {candles.length} | {technical?.economic_pressure || "pressure pending"}
+        <div className="terminal-pair">
+          <div>
+            <div className="terminal-kpi-label">Resistance Basis</div>
+            <div className="mt-2 text-sm leading-7 text-slate-200">
+              {technical?.resistance_basis || "Resistance basis unavailable."}
+            </div>
+          </div>
+        </div>
+
+        <div className="terminal-pair">
+          <div>
+            <div className="terminal-kpi-label">Engine Status</div>
+            <div className="mt-2 text-sm leading-7 text-slate-200">
+              {technical?.calibration_window || "Calibration pending."}
+              <br />
+              Cached candles {candles.length} | {pretty(technical?.economic_pressure)}
+            </div>
           </div>
         </div>
       </div>

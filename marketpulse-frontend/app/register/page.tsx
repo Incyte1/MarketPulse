@@ -35,7 +35,7 @@ export default function RegisterPage() {
   return (
     <AuthShell
       eyebrow="New Workspace"
-      title={`Create a persistent ${brand.name} desk.`}
+      title={`Create your ${brand.name} account.`}
       subtitle={brand.registerPrompt}
       altHref="/login"
       altLabel="Log in"
@@ -46,15 +46,9 @@ export default function RegisterPage() {
         <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
           Open your workspace.
         </div>
-        <p className="mt-3 text-sm leading-6 text-slate-300">
-          This is a real account flow backed by the API, with workspace state that follows the user.
+        <p className="mt-3 text-sm leading-7 text-slate-300">
+          This account flow is backed by the API, and the workspace state follows the user after sign-in.
         </p>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        <span className="desk-chip mono">Profile</span>
-        <span className="desk-chip mono">Security</span>
-        <span className="desk-chip mono">Persistent desk</span>
       </div>
 
       <form
