@@ -30,6 +30,11 @@ const navItems = [
     match: (pathname: string) => pathname === "/workspace",
   },
   {
+    label: "Chart",
+    href: `/workspace/chart?symbol=${defaultSymbol.symbol.toLowerCase()}&interval=60`,
+    match: (pathname: string) => pathname.startsWith("/workspace/chart"),
+  },
+  {
     label: "Symbol",
     href: `/workspace/symbol/${defaultSymbol.symbol.toLowerCase()}`,
     match: (pathname: string) => pathname.startsWith("/workspace/symbol"),

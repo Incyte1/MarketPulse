@@ -8,6 +8,7 @@ from app.models.ticker import (
     TechnicalContext,
     TickerAnalysisResponse,
 )
+from app.models.intelligence import TickerIntelligenceResponse
 from app.services.cache_db import cache_get
 from app.services.refresh_service import refresh_symbol_cache
 from app.services.refresh_tasks import run_once
@@ -22,6 +23,7 @@ from app.services.news_service import (
 from app.services.bias_service import calculate_bias
 from app.services.guidance_service import build_guidance
 from app.services.pro_analysis_service import build_professional_analysis
+from app.services.ticker_intelligence_service import get_ticker_intelligence
 from app.utils.market_hours import get_market_status
 from app.utils.symbols import company_name
 
@@ -169,5 +171,15 @@ def ticker_analysis(
             interpreted_ticker_news=news_bundle["ticker_news"],
             interpreted_macro_news=news_bundle["macro_news"],
         )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.get("/{symbol}/intelligence", response_model=TickerIntelligenceResponse)
+def ticker_intelligence(symbol: str):
+    normalized = symbol.upper().strip()
+
+    try:
+        return get_ticker_intelligence(normalized)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))

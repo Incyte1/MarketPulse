@@ -125,6 +125,22 @@ export type NewsResponse = {
   macro_news: InterpretedArticle[];
 };
 
+export type Candle = {
+  datetime: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+};
+
+export type ChartResponse = {
+  symbol: string;
+  interval: string;
+  range: string;
+  candles: Candle[];
+};
+
 async function apiGet<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     cache: "no-store",
@@ -156,6 +172,18 @@ export async function fetchAnalysis(symbol: string, interval: string): Promise<A
 export async function fetchNews(symbol: string, interval: string): Promise<NewsResponse> {
   return apiGet<NewsResponse>(
     `/api/ticker/${encodeURIComponent(symbol)}/news?interval=${encodeURIComponent(interval)}`
+  );
+}
+
+export async function fetchChart(
+  symbol: string,
+  interval: string,
+  range: string
+): Promise<ChartResponse> {
+  return apiGet<ChartResponse>(
+    `/api/ticker/${encodeURIComponent(symbol)}/chart?interval=${encodeURIComponent(
+      interval
+    )}&range=${encodeURIComponent(range)}`
   );
 }
 

@@ -4,6 +4,7 @@ from app.api.router import api_router
 from app.core.config import settings
 from app.services.auth_service import init_auth_db
 from app.services.cache_db import init_cache_db
+from app.services.chart_layout_service import init_chart_layout_db
 from app.services.workflow_service import init_workflow_db
 
 app = FastAPI(
@@ -25,6 +26,7 @@ app.add_middleware(
 
 init_cache_db()
 init_auth_db()
+init_chart_layout_db()
 init_workflow_db()
 app.include_router(api_router, prefix="/api")
 

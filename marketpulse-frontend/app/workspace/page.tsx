@@ -8,7 +8,6 @@ import {
   symbols,
 } from "@/lib/mock-unveni";
 import {
-  formatCurrency,
   formatDateLabel,
   formatSignedPercent,
 } from "@/lib/utils";
