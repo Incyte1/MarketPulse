@@ -5,63 +5,46 @@ import { useEffect, useState } from "react";
 import BrandLockup from "@/components/BrandLockup";
 import { restoreSession, type AuthSession } from "@/lib/auth";
 
-const HERO_PANELS = [
+const SIGNAL_LAYERS = [
   {
-    eyebrow: "Multi-horizon engines",
-    title: "Independent short-term and long-term reads.",
+    label: "Signal Layer",
+    title: "Multivariate inputs instead of one-note chart calls.",
     copy:
-      "Separate data windows, separate support and resistance logic, and separate decision framing keep execution and thesis work from bleeding into each other.",
+      "Price, volume, regime, relative strength, benchmark drift, sector context, and catalyst flow sit in the same read before anything is promoted.",
   },
   {
-    eyebrow: "Research review",
-    title: "Catalysts ranked for action, not content browsing.",
+    label: "Rank Layer",
+    title: "The book is sorted at the portfolio level.",
     copy:
-      "Ticker-specific drivers, macro context, confirmation, invalidation, and plain-language summaries are organized for fast analyst review.",
+      "Candidates are ranked against each other, not scored in isolation, so new capital has an order and weaker names can be rotated out cleanly.",
   },
   {
-    eyebrow: "Workspace memory",
-    title: "Saved desks, watchlists, and memo continuity.",
+    label: "Execution Layer",
+    title: "Research turns into an action-ready queue.",
     copy:
-      "Teams return to the same symbol context, open questions, and research stack instead of rebuilding the session every morning.",
+      "The workspace now produces target weights, benchmark comparison, daily summary language, and broker-ready previews instead of dead-end notes.",
   },
 ];
 
-const PLATFORM_METRICS = [
-  { label: "Short-term", value: "1D / 1H" },
-  { label: "Long-term", value: "1W / 1D" },
-  { label: "Charting", value: "TradingView" },
+const WORKFLOW_STEPS = [
+  "Read the active symbol with separate short-term and long-term engines.",
+  "Promote names into a shared watchlist and persistent workspace.",
+  "Rank the current universe into buy, review, and exit queues.",
+  "Prepare execution with benchmark-aware portfolio and broker preview.",
 ];
 
-const RESEARCH_PILLARS = [
+const SURFACE_POINTS = [
   {
-    title: "Chart-first review",
-    copy:
-      "Run the market structure, levels, and execution framing from the same surface where the markup actually happens.",
+    label: "Desk",
+    copy: "Chart-first review for the active symbol, current levels, and regime.",
   },
   {
-    title: "Catalyst triage",
-    copy:
-      "Separate ticker and macro context so analysts can isolate what matters now versus what is merely noisy background flow.",
+    label: "Research",
+    copy: "Ticker catalysts, macro drivers, confirmation, invalidation, and plain-English readouts.",
   },
   {
-    title: "Thesis discipline",
-    copy:
-      "Confirmation, invalidation, and memo context stay attached to the symbol so the system supports review instead of replacing it.",
-  },
-];
-
-const TEAM_USE_CASES = [
-  {
-    title: "Analysts",
-    copy: "Condense the first pass of catalyst review, technical structure, and note prep into one workspace.",
-  },
-  {
-    title: "Portfolio managers",
-    copy: "Review active names faster with a consistent short-term and long-term framing across the coverage universe.",
-  },
-  {
-    title: "Trading desks",
-    copy: "Use one chart-led surface for execution context, level tracking, and linked research handoff.",
+    label: "Memory",
+    copy: "Watchlists, alerts, memos, portfolio queue, and execution preview tied to one workspace.",
   },
 ];
 
@@ -89,168 +72,202 @@ export default function HomePage() {
     };
   }, []);
 
+  const primaryHref = authReady && session ? "/workspace" : "/register";
+  const primaryLabel = authReady && session ? "Open Workspace" : "Request Access";
+
   return (
-    <main className="app-shell min-h-screen px-3 py-3 lg:px-4 lg:py-4">
-      <div className="mx-auto max-w-[1680px] space-y-3 md:space-y-4">
-        <header className="command-shell reveal-up sticky top-3 z-30 overflow-hidden px-4 py-4 lg:px-5">
+    <main className="app-shell min-h-screen px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6">
+      <div className="mx-auto max-w-[1680px] space-y-4">
+        <header className="command-shell reveal-up sticky top-3 z-30 px-4 py-4 sm:px-5 lg:px-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex min-w-0 flex-col gap-3">
+            <div className="flex min-w-0 items-center justify-between gap-4">
               <BrandLockup />
+              <div className="hidden items-center gap-3 lg:flex">
+                <span className="desk-chip desk-chip-accent mono">
+                  <span className="status-dot" />
+                  Live Research Product
+                </span>
+                <span className="desk-chip mono">Short horizon + portfolio engine</span>
+              </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 sm:justify-start lg:justify-end">
-              {authReady && session ? (
-                <Link href="/workspace" className="action-button">
-                  Open Workspace
-                </Link>
-              ) : (
-                <>
-                  <Link href="/login" className="action-button-secondary">
-                    Login
-                  </Link>
-                  <Link href="/register" className="action-button">
-                    Create Account
-                  </Link>
-                </>
-              )}
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href="/login" className="action-button-secondary">
+                Sign In
+              </Link>
+              <Link href={primaryHref} className="action-button">
+                {primaryLabel}
+              </Link>
             </div>
           </div>
         </header>
 
-        <section
-          id="overview"
-          className="frame-shell reveal-up reveal-delay-1 overflow-hidden px-5 py-7 sm:px-6 sm:py-8 lg:px-8 lg:py-10"
-        >
-          <div className="grid gap-8 xl:grid-cols-[1.02fr_0.98fr] xl:items-end">
-            <div>
-              <div className="eyebrow">Research Platform</div>
-              <h1 className="mt-4 max-w-[760px] text-[2.15rem] font-semibold leading-[0.96] tracking-[-0.07em] text-white sm:text-[2.8rem] md:text-[3.3rem] lg:text-[4.7rem] xl:text-[5.3rem]">
-                Institutional market review without the terminal bloat.
+        <section className="market-plane reveal-up reveal-delay-1 relative -mx-3 overflow-hidden border-y border-[var(--line)] px-3 py-8 sm:-mx-4 sm:px-4 lg:-mx-6 lg:px-6 lg:py-10">
+          <div className="hero-orbit hidden xl:block" />
+
+          <div className="mx-auto grid max-w-[1680px] gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(440px,0.85fr)] xl:items-end">
+            <div className="relative z-10 max-w-[760px]">
+              <div className="desk-chip desk-chip-info mono">Trading workspace rework in motion</div>
+              <h1 className="poster-text mt-6 max-w-[820px] text-[3rem] font-semibold text-white sm:text-[4.4rem] lg:text-[6.2rem]">
+                A sharper trading desk, not a soft dashboard.
               </h1>
-              <p className="mt-5 max-w-[720px] text-base leading-8 text-[var(--text-soft)] lg:text-lg">
-                Unveni gives research teams a chart-led workspace for multi-horizon technical review,
-                catalyst triage, and memo-ready context. The public site introduces the product; the
-                live workspace opens only after sign-in.
+              <p className="mt-6 max-w-[650px] text-base leading-8 text-[var(--text-soft)] sm:text-lg">
+                Unveni is moving toward a tighter market-product feel: stronger chart hierarchy,
+                cleaner signal ranking, portfolio-aware review, and execution context that feels
+                closer to a real trading platform than a styled research app.
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link href={session ? "/workspace" : "/register"} className="action-button">
-                  {session ? "Go To Workspace" : "Request Access"}
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href={primaryHref} className="action-button">
+                  {primaryLabel}
                 </Link>
                 <Link href="/login" className="action-button-secondary">
-                  Sign In
+                  Enter Existing Desk
                 </Link>
               </div>
+
+              <div className="mt-8 flex flex-wrap gap-2">
+                <span className="desk-chip mono">Short-term / long-term engines</span>
+                <span className="desk-chip mono">Portfolio rank engine</span>
+                <span className="desk-chip mono">Daily summary + execution preview</span>
+              </div>
             </div>
 
-            <div className="sub-surface px-4 py-4 sm:px-5 sm:py-5 lg:px-6 lg:py-6">
-              <div className="eyebrow">Platform Snapshot</div>
-              <div className="mt-4 grid gap-3">
-                {HERO_PANELS.map((panel) => (
-                  <div key={panel.title} className="sub-surface px-4 py-4 sm:px-5">
-                    <div className="field-label">{panel.eyebrow}</div>
-                    <div className="mt-2 text-lg font-semibold text-white sm:text-xl">{panel.title}</div>
-                    <div className="mt-2 text-sm leading-7 text-[var(--text-soft)]">{panel.copy}</div>
+            <div className="relative z-10 grid gap-3">
+              <div className="ticker-lane">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="eyebrow">Market Stack</div>
+                    <div className="mt-2 text-xl font-semibold text-white">Multivariate signal system</div>
                   </div>
-                ))}
+                  <span className="desk-chip desk-chip-accent mono">Live</span>
+                </div>
               </div>
 
-              <div className="mt-5 grid gap-2 sm:grid-cols-3">
-                {PLATFORM_METRICS.map((item) => (
-                  <div key={item.label} className="sub-surface px-4 py-4">
-                    <div className="field-label">{item.label}</div>
-                    <div className="mt-2 text-xl font-semibold text-white">{item.value}</div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="metric-cell">
+                  <div className="eyebrow">Research Inputs</div>
+                  <div className="mt-3 text-3xl font-semibold text-white">Price + Volume</div>
+                  <div className="mt-2 text-sm leading-7 text-[var(--text-soft)]">
+                    Relative strength, market tone, and sector context are all pushed into the
+                    same read.
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="research" className="grid gap-3 xl:grid-cols-[minmax(0,1.08fr)_0.92fr]">
-          <div className="frame-shell reveal-up reveal-delay-2 px-5 py-6 lg:px-6">
-            <div className="eyebrow">Research Flow</div>
-            <div className="mt-3 text-3xl font-semibold text-white">
-              Built for real review flow, not passive dashboard consumption.
-            </div>
-            <div className="mt-4 text-sm leading-7 text-[var(--text-soft)]">
-              The platform is designed to help analysts move from chart structure to catalyst review
-              to note framing without bouncing across disconnected tools.
-            </div>
-
-            <div className="mt-5 grid gap-2 lg:grid-cols-3">
-              {RESEARCH_PILLARS.map((pillar) => (
-                <div key={pillar.title} className="sub-surface px-4 py-4">
-                  <div className="field-label">{pillar.title}</div>
-                  <div className="mt-2 text-sm leading-7 text-slate-200">{pillar.copy}</div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          <div className="frame-shell reveal-up reveal-delay-3 px-5 py-6 lg:px-6">
-            <div className="eyebrow">Workspace Access</div>
-            <div className="mt-3 text-3xl font-semibold text-white">A private workspace with a public-facing product site.</div>
-            <div className="mt-4 text-sm leading-7 text-[var(--text-soft)]">
-              Public visitors land on the Unveni product homepage. Authorized users enter a private
-              workspace where desks, watchlists, and research state persist across sessions.
-            </div>
-
-            <div className="mt-5 space-y-2">
-              <div className="sub-surface px-4 py-4">
-                <div className="field-label">Private Access</div>
-                <div className="mt-2 text-sm leading-7 text-slate-200">
-                  The workspace stays account-based so coverage, saved context, and ongoing review flow remain tied to the team using it.
+                <div className="metric-cell">
+                  <div className="eyebrow">Book Logic</div>
+                  <div className="mt-3 text-3xl font-semibold text-white">Ranked Queue</div>
+                  <div className="mt-2 text-sm leading-7 text-[var(--text-soft)]">
+                    Buy, review, and exit candidates are sorted against each other at the
+                    portfolio layer.
+                  </div>
                 </div>
               </div>
-              <div className="sub-surface px-4 py-4">
-                <div className="field-label">Persistent State</div>
-                <div className="mt-2 text-sm leading-7 text-slate-200">
-                  Saved desks, watchlists, alerts, and memo context are designed to survive past the first session.
+
+              <div className="space-y-3">
+                <div className="ticker-lane flex items-center justify-between gap-3">
+                  <div>
+                    <div className="eyebrow">Portfolio</div>
+                    <div className="mt-1 text-sm text-white">Target weights, benchmark spread, daily brief</div>
+                  </div>
+                  <div className="text-right text-sm">
+                    <div className="signal-positive font-semibold">MODEL + EXECUTION</div>
+                    <div className="text-[var(--text-dim)]">Report + broker preview</div>
+                  </div>
                 </div>
-              </div>
-              <div className="sub-surface px-4 py-4">
-                <div className="field-label">Team Readiness</div>
-                <div className="mt-2 text-sm leading-7 text-slate-200">
-                  The public site can stay clean and brand-forward while the actual review surface remains private.
+
+                <div className="ticker-lane flex items-center justify-between gap-3">
+                  <div>
+                    <div className="eyebrow">Workspace</div>
+                    <div className="mt-1 text-sm text-white">Watchlists, alerts, memo memory, symbol sync</div>
+                  </div>
+                  <div className="text-right text-sm">
+                    <div className="text-white font-semibold">PERSISTENT</div>
+                    <div className="text-[var(--text-dim)]">Desk continuity</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section id="teams" className="frame-shell reveal-up reveal-delay-3 px-5 py-6 lg:px-6">
-          <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr] xl:items-start">
-            <div>
-              <div className="eyebrow">Who It Serves</div>
-              <div className="mt-3 text-3xl font-semibold text-white">
-                Unveni is meant to compress the first hour of market review.
-              </div>
-              <div className="mt-4 text-sm leading-7 text-[var(--text-soft)]">
-                The product is structured for firms that want faster analytical review without giving up chart work, catalyst context, or decision discipline.
-              </div>
+        <section className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+          <div className="frame-shell reveal-up reveal-delay-2 px-5 py-6 sm:px-6 lg:px-8 lg:py-8">
+            <div className="eyebrow">Architecture</div>
+            <div className="mt-3 max-w-[720px] text-3xl font-semibold text-white sm:text-4xl">
+              Three layers that push the product closer to a real trading platform.
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-3">
-              {TEAM_USE_CASES.map((useCase) => (
-                <div key={useCase.title} className="sub-surface px-4 py-4">
-                  <div className="field-label">{useCase.title}</div>
-                  <div className="mt-2 text-sm leading-7 text-slate-200">{useCase.copy}</div>
+            <div className="mt-6 grid gap-3">
+              {SIGNAL_LAYERS.map((item) => (
+                <div key={item.title} className="interactive-row">
+                  <div className="eyebrow">{item.label}</div>
+                  <div className="mt-2 text-lg font-semibold text-white">{item.title}</div>
+                  <div className="mt-2 max-w-[620px] text-sm leading-7 text-[var(--text-soft)]">
+                    {item.copy}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[20px] border border-white/8 bg-white/[0.025] px-4 py-4 sm:px-5">
+          <div className="frame-shell reveal-up reveal-delay-3 px-5 py-6 sm:px-6 lg:px-8 lg:py-8">
+            <div className="eyebrow">Cadence</div>
+            <div className="mt-3 text-3xl font-semibold text-white sm:text-4xl">
+              The operating rhythm should feel deliberate from first scan to trade prep.
+            </div>
+
+            <div className="mt-6 space-y-3">
+              {WORKFLOW_STEPS.map((step, index) => (
+                <div key={step} className="interactive-row flex items-start gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold text-white">
+                    {String(index + 1).padStart(2, "0")}
+                  </div>
+                  <div className="pt-1 text-sm leading-7 text-[var(--text-soft)]">{step}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="frame-shell reveal-up reveal-delay-3 px-5 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <div className="grid gap-8 xl:grid-cols-[0.95fr_1.05fr] xl:items-start">
             <div>
-              <div className="text-lg font-semibold text-white">Request access to the private workspace.</div>
-              <div className="mt-1 text-sm leading-7 text-[var(--text-soft)]">
-                Use the public site for product framing, then sign in to open the live research surface.
+              <div className="eyebrow">Surface Model</div>
+              <div className="mt-3 max-w-[640px] text-3xl font-semibold text-white sm:text-4xl">
+                One product, three jobs: read the tape, work the thesis, manage the book.
+              </div>
+              <div className="mt-4 max-w-[620px] text-sm leading-8 text-[var(--text-soft)]">
+                The redesign is moving the app away from generalized panels and toward a clearer
+                product hierarchy: the chart is primary, the research feed is contextual, and the
+                workspace memory is always available without taking over the screen.
               </div>
             </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              {SURFACE_POINTS.map((item) => (
+                <div key={item.label} className="metric-cell">
+                  <div className="eyebrow">{item.label}</div>
+                  <div className="mt-3 text-base font-semibold text-white">{item.label} Surface</div>
+                  <div className="mt-3 text-sm leading-7 text-[var(--text-soft)]">{item.copy}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6">
+            <div>
+              <div className="text-xl font-semibold text-white">Open the new desk and stress the workflow.</div>
+              <div className="mt-2 text-sm leading-7 text-[var(--text-soft)]">
+                The frontend is staying on Next.js and TypeScript because that is already the right
+                web stack for a premium trading UI. If we ever replace a language, it would be for
+                backend performance services, not because the frontend stack is weak.
+              </div>
+            </div>
+
             <div className="flex flex-wrap gap-3">
-              <Link href={session ? "/workspace" : "/register"} className="action-button">
-                {session ? "Open Workspace" : "Create Account"}
+              <Link href={primaryHref} className="action-button">
+                {primaryLabel}
               </Link>
               <Link href="/login" className="action-button-secondary">
                 Sign In

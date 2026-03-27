@@ -33,26 +33,26 @@ export default function LoginPage() {
   return (
     <AuthShell
       eyebrow="Secure Sign-In"
-      title="Sign in and return straight to the desk."
+      title="Re-enter the desk without losing context."
       subtitle={brand.loginPrompt}
       altHref="/register"
       altLabel="Create an account"
       altPrompt={`New to ${brand.name}?`}
     >
       <div>
-        <div className="eyebrow">Welcome Back</div>
+        <div className="eyebrow">Desk Access</div>
         <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
           Sign in to continue.
         </div>
         <p className="mt-3 text-sm leading-6 text-slate-300">
-          Your session is validated against the backend before the workspace opens.
+          Your account, workspaces, alerts, and memo state are restored before the desk opens.
         </p>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        <span className="desk-chip mono">Desks</span>
-        <span className="desk-chip mono">Alerts</span>
-        <span className="desk-chip mono">Memo sync</span>
+        <span className="desk-chip mono">Signal queues</span>
+        <span className="desk-chip mono">Portfolio memory</span>
+        <span className="desk-chip mono">Execution prep</span>
       </div>
 
       <form
@@ -117,7 +117,7 @@ export default function LoginPage() {
         ) : null}
 
         <button className="action-button w-full" disabled={loading}>
-          {loading ? "Signing in..." : "Log in"}
+          {loading ? "Signing in..." : "Open Desk"}
         </button>
       </form>
     </AuthShell>

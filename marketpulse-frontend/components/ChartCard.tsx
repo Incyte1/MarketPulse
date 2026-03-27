@@ -129,12 +129,8 @@ export default function ChartCard({
   const change = analysis?.price_context.daily_change_percent ?? 0;
   const technical = analysis?.technical_context;
   const regime = readable(analysis?.professional_analysis.regime);
-  const workflowLabel = horizon === "short_term" ? "Execution Stage" : "Thesis Stage";
+  const workflowLabel = horizon === "short_term" ? "Execution Deck" : "Thesis Deck";
   const basisInterval = technical?.data_source_interval || interval;
-  const workspaceDescription =
-    horizon === "short_term"
-      ? "Short-term levels are isolated from 1-day hourly structure. The chart workspace stays flexible for faster markup."
-      : "Long-term levels are isolated from 1-week daily structure. Use the chart to frame a wider thesis, not intraday noise.";
 
   useEffect(() => {
     const container = containerRef.current;
@@ -172,17 +168,17 @@ export default function ChartCard({
       support_host: "https://www.tradingview.com",
       studies: ["VWAP@tv-basicstudies", "MASimple@tv-basicstudies"],
       overrides: {
-        "paneProperties.background": "#05070a",
-        "paneProperties.vertGridProperties.color": "rgba(255,255,255,0.035)",
-        "paneProperties.horzGridProperties.color": "rgba(255,255,255,0.035)",
+        "paneProperties.background": "#07131d",
+        "paneProperties.vertGridProperties.color": "rgba(255,255,255,0.03)",
+        "paneProperties.horzGridProperties.color": "rgba(255,255,255,0.03)",
         "symbolWatermarkProperties.transparency": 94,
-        "scalesProperties.textColor": "#b4b8bd",
-        "mainSeriesProperties.candleStyle.upColor": "#5fe0a2",
-        "mainSeriesProperties.candleStyle.borderUpColor": "#5fe0a2",
-        "mainSeriesProperties.candleStyle.wickUpColor": "#5fe0a2",
-        "mainSeriesProperties.candleStyle.downColor": "#ff7368",
-        "mainSeriesProperties.candleStyle.borderDownColor": "#ff7368",
-        "mainSeriesProperties.candleStyle.wickDownColor": "#ff7368",
+        "scalesProperties.textColor": "#9eb0be",
+        "mainSeriesProperties.candleStyle.upColor": "#86f86f",
+        "mainSeriesProperties.candleStyle.borderUpColor": "#86f86f",
+        "mainSeriesProperties.candleStyle.wickUpColor": "#86f86f",
+        "mainSeriesProperties.candleStyle.downColor": "#ff8c7d",
+        "mainSeriesProperties.candleStyle.borderDownColor": "#ff8c7d",
+        "mainSeriesProperties.candleStyle.wickDownColor": "#ff8c7d",
       },
       container_id: chartId,
     });
@@ -196,23 +192,25 @@ export default function ChartCard({
 
   return (
     <section className="frame-shell reveal-up reveal-delay-1 overflow-hidden p-0">
-      <div className="border-b border-white/8 px-4 py-4 lg:px-5">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+      <div className="border-b border-white/10 px-4 py-4 lg:px-5">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="desk-chip desk-chip-accent mono">{workflowLabel}</span>
               <span className="desk-chip mono">
-                Engine {range} / {basisInterval}
+                {range} / {basisInterval}
               </span>
+              <span className="desk-chip mono">{regime}</span>
             </div>
 
-            <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+            <div className="mt-5 flex flex-wrap items-end justify-between gap-4">
               <div className="min-w-0">
-                <div className="flex items-end gap-3">
-                  <div className="mono text-[34px] font-semibold tracking-[-0.08em] text-white sm:text-[42px] lg:text-[52px]">
+                <div className="eyebrow">Active Chart</div>
+                <div className="mt-2 flex items-end gap-3">
+                  <div className="text-[2.35rem] font-semibold tracking-[-0.08em] text-white sm:text-[3rem] lg:text-[3.85rem]">
                     {symbol.toUpperCase()}
                   </div>
-                  <div className="pb-2 text-sm uppercase tracking-[0.2em] text-[var(--text-dim)]">
+                  <div className="pb-2 text-xs uppercase tracking-[0.22em] text-[var(--text-dim)]">
                     {analysis?.market_status || "loading"}
                   </div>
                 </div>
@@ -223,10 +221,10 @@ export default function ChartCard({
 
               {price != null ? (
                 <div className="text-right">
-                  <div className="text-[24px] font-semibold tracking-tight text-white sm:text-[30px] lg:text-[38px]">
+                  <div className="text-[1.85rem] font-semibold tracking-[-0.05em] text-white sm:text-[2.2rem] lg:text-[2.7rem]">
                     ${price.toFixed(2)}
                   </div>
-                  <div className={`mt-1 text-sm font-medium ${change >= 0 ? "signal-positive" : "signal-negative"}`}>
+                  <div className={`mt-2 text-sm font-semibold ${change >= 0 ? "signal-positive" : "signal-negative"}`}>
                     {change >= 0 ? "+" : ""}
                     {change.toFixed(2)}%
                   </div>
@@ -234,7 +232,7 @@ export default function ChartCard({
               ) : null}
             </div>
 
-            <div className="mt-4 max-w-4xl text-sm leading-7 text-[var(--text-soft)]">
+            <div className="mt-5 max-w-4xl text-sm leading-7 text-[var(--text-soft)]">
               {analysis?.guidance.summary ||
                 analysis?.professional_analysis.executive_summary ||
                 "Loading chart context and current execution read."}
@@ -242,37 +240,45 @@ export default function ChartCard({
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/8 pt-4">
-          <span className="desk-chip mono">{regime}</span>
-          <span className="desk-chip mono">
-            {technical?.fast_indicator_label || "Fast trend"} active
-          </span>
-          <span className="desk-chip mono">
-            VWAP {technical?.vwap?.toFixed(2) ?? "n/a"}
-          </span>
-          <span className="desk-chip mono">
-            ATR {technical?.atr?.toFixed(2) ?? "n/a"}
-          </span>
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <div className="ticker-lane">
+            <div className="eyebrow">Support / Resistance</div>
+            <div className="mt-2 text-sm leading-7 text-white">
+              {technical?.support_level?.toFixed(2) ?? "n/a"} / {technical?.resistance_level?.toFixed(2) ?? "n/a"}
+            </div>
+          </div>
+          <div className="ticker-lane">
+            <div className="eyebrow">VWAP / ATR</div>
+            <div className="mt-2 text-sm leading-7 text-white">
+              {technical?.vwap?.toFixed(2) ?? "n/a"} / {technical?.atr?.toFixed(2) ?? "n/a"}
+            </div>
+          </div>
+          <div className="ticker-lane">
+            <div className="eyebrow">Range Position</div>
+            <div className="mt-2 text-sm leading-7 text-white">
+              {technical?.range_position_percent?.toFixed(1) ?? "n/a"}% | {technical?.volatility_state || "pending"}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="relative h-[48svh] min-h-[360px] w-full bg-[#05070a] sm:min-h-[420px] lg:h-[52svh] lg:min-h-[520px] 2xl:h-[58svh] 2xl:min-h-[620px]">
+      <div className="relative h-[50svh] min-h-[380px] w-full bg-[#06111b] sm:min-h-[430px] lg:h-[56svh] lg:min-h-[540px] 2xl:h-[60svh] 2xl:min-h-[640px]">
         <div
           ref={containerRef}
           className="tradingview-widget-container relative h-full w-full overflow-hidden"
         />
 
         {loading ? (
-          <div className="pointer-events-none absolute right-4 bottom-4 rounded-[14px] border border-white/10 bg-black/55 px-3 py-2 text-xs text-white">
+          <div className="pointer-events-none absolute right-4 bottom-4 rounded-[16px] border border-white/10 bg-black/55 px-3 py-2 text-xs text-white">
             Refreshing {symbol.toUpperCase()}...
           </div>
         ) : null}
       </div>
 
-      <div className="grid gap-2 border-t border-white/8 p-3 lg:grid-cols-2">
+      <div className="grid gap-3 border-t border-white/10 p-3 lg:grid-cols-2">
         <div className="sub-surface px-4 py-4">
           <div className="field-label">Level Basis</div>
-          <div className="mt-2 text-sm leading-7 text-slate-200">
+          <div className="mt-3 text-sm leading-7 text-slate-200">
             {technical?.support_basis || "Support basis unavailable."}
             <br />
             {technical?.resistance_basis || "Resistance basis unavailable."}
@@ -281,11 +287,10 @@ export default function ChartCard({
 
         <div className="sub-surface px-4 py-4">
           <div className="field-label">Engine Status</div>
-          <div className="mt-2 text-sm leading-7 text-slate-200">
-            {technical?.calibration_window || workspaceDescription}
+          <div className="mt-3 text-sm leading-7 text-slate-200">
+            {technical?.calibration_window || "Calibration pending."}
             <br />
-            Range position {technical?.range_position_percent?.toFixed(1) ?? "n/a"}% | Cached candles{" "}
-            {candles.length}
+            Cached candles {candles.length} | {technical?.economic_pressure || "pressure pending"}
           </div>
         </div>
       </div>

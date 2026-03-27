@@ -1,15 +1,15 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
+import { IBM_Plex_Mono, Manrope, Sora } from "next/font/google";
 import { brand } from "@/lib/brand";
 
-const headingFont = Space_Grotesk({
+const headingFont = Sora({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
   variable: "--font-heading",
 });
 
-const bodyFont = Plus_Jakarta_Sans({
+const bodyFont = Manrope({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-body",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${headingFont.variable} ${bodyFont.variable} ${monoFont.variable}`}>
+      <body className={`${headingFont.variable} ${bodyFont.variable} ${monoFont.variable} antialiased`}>
         {children}
       </body>
     </html>

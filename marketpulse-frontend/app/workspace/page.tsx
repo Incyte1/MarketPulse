@@ -56,6 +56,12 @@ function chartRangeForHorizon(mode: HorizonMode): string {
   return mode === "short_term" ? "1D" : "1W";
 }
 
+function formatSurfaceLabel(value: SurfaceMode) {
+  if (value === "desk") return "Desk";
+  if (value === "research") return "Research";
+  return "Memory";
+}
+
 export default function WorkspacePage() {
   const router = useRouter();
   const [symbol, setSymbol] = useState(DEFAULT_SYMBOL);
@@ -214,6 +220,9 @@ export default function WorkspacePage() {
         };
 
   const technical = mergedAnalysis?.technical_context;
+  const price = mergedAnalysis?.price_context.current_price ?? 0;
+  const change = mergedAnalysis?.price_context.daily_change_percent ?? 0;
+
   function focusSurface(next: SurfaceMode) {
     setActiveSurface(next);
     const mapping: Record<SurfaceMode, HTMLDivElement | null> = {
@@ -231,11 +240,11 @@ export default function WorkspacePage() {
   if (!authReady || !session) {
     return (
       <div className="app-shell flex min-h-screen items-center justify-center px-4 py-6">
-        <div className="frame-shell w-full max-w-[520px] px-6 py-8 text-center">
+        <div className="frame-shell w-full max-w-[560px] px-6 py-8 text-center">
           <div className="eyebrow">Secure Workspace</div>
-          <div className="mt-3 text-3xl font-semibold text-white">Loading access...</div>
+          <div className="mt-3 text-3xl font-semibold text-white">Opening the desk...</div>
           <div className="mt-3 text-sm leading-7 text-[var(--text-soft)]">
-            Validating your session before opening the Unveni workspace.
+            Validating your session before loading the active trading workspace.
           </div>
         </div>
       </div>
@@ -243,36 +252,30 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div className="app-shell min-h-screen px-3 py-3 lg:px-4 lg:py-4">
-      <div className="mx-auto max-w-[1880px] space-y-3">
-        <header className="command-shell reveal-up sticky top-2 z-30 overflow-hidden px-4 py-4 sm:top-3 lg:px-5">
+    <div className="app-shell min-h-screen px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6">
+      <div className="mx-auto max-w-[1900px] space-y-4">
+        <header className="command-shell reveal-up px-4 py-4 sm:px-5 lg:px-6">
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-center">
-              <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center 2xl:min-w-[420px]">
+            <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-center 2xl:justify-between">
+              <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-center xl:gap-6">
                 <BrandLockup />
 
-                <div className="overflow-x-auto pb-1 xl:pb-0">
-                  <div className="segmented-shell min-w-max">
-                    {(["desk", "research", "workflow"] as SurfaceMode[]).map((item) => (
-                      <button
-                        key={item}
-                        type="button"
-                        className={`surface-tab ${activeSurface === item ? "surface-tab-active" : ""}`}
-                        onClick={() => focusSurface(item)}
-                      >
-                        {item === "desk"
-                          ? "Markets"
-                          : item === "research"
-                            ? "Research"
-                            : "Workspace"}
-                      </button>
-                    ))}
-                  </div>
+                <div className="segmented-shell max-w-max">
+                  {(["desk", "research", "workflow"] as SurfaceMode[]).map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      className={`surface-tab ${activeSurface === item ? "surface-tab-active" : ""}`}
+                      onClick={() => focusSurface(item)}
+                    >
+                      {formatSurfaceLabel(item)}
+                    </button>
+                  ))}
                 </div>
               </div>
 
               <form
-                className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row"
+                className="flex min-w-0 flex-1 flex-col gap-2 xl:max-w-[720px] xl:flex-row"
                 onSubmit={(event) => {
                   event.preventDefault();
                   const value = quickOpen.trim().toUpperCase();
@@ -286,14 +289,14 @@ export default function WorkspacePage() {
                   className="command-input"
                   value={quickOpen}
                   onChange={(event) => setQuickOpen(event.target.value.toUpperCase())}
-                  placeholder="Search ticker, memo, watchlist, or workspace"
+                  placeholder="Jump to ticker, workspace, or memo context"
                 />
-                <button className="action-button min-w-[92px] sm:w-auto" type="submit">
+                <button className="action-button min-w-[110px]" type="submit">
                   Open
                 </button>
               </form>
 
-              <div className="flex flex-wrap items-center gap-3 sm:justify-between 2xl:justify-end">
+              <div className="flex flex-wrap items-center gap-3">
                 <div className="segmented-shell">
                   <button
                     className={`segmented-button ${
@@ -302,7 +305,7 @@ export default function WorkspacePage() {
                     type="button"
                     onClick={() => setHorizon("short_term")}
                   >
-                    Short-Term
+                    Short Horizon
                   </button>
                   <button
                     className={`segmented-button ${
@@ -311,36 +314,78 @@ export default function WorkspacePage() {
                     type="button"
                     onClick={() => setHorizon("long_term")}
                   >
-                    Long-Term
+                    Long Horizon
                   </button>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="hidden rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3 text-right xl:block">
-                    <div className="text-sm font-medium text-white">{session.user.name}</div>
-                    <div className="mt-1 text-xs text-[var(--text-soft)]">{session.user.email}</div>
-                  </div>
-                  <button
-                    className="action-button-secondary"
-                    disabled={loggingOut}
-                    onClick={async () => {
-                      setLoggingOut(true);
-                      await logoutUser();
-                      setSession(null);
-                      setLoggingOut(false);
-                      router.replace("/login");
-                    }}
-                  >
-                    {loggingOut ? "Signing out..." : "Logout"}
-                  </button>
+                <div className="hidden rounded-[20px] border border-white/10 bg-white/[0.03] px-4 py-3 text-right xl:block">
+                  <div className="text-sm font-semibold text-white">{session.user.name}</div>
+                  <div className="mt-1 text-xs text-[var(--text-soft)]">{session.user.email}</div>
+                </div>
+
+                <button
+                  className="action-button-secondary"
+                  disabled={loggingOut}
+                  onClick={async () => {
+                    setLoggingOut(true);
+                    await logoutUser();
+                    setSession(null);
+                    setLoggingOut(false);
+                    router.replace("/login");
+                  }}
+                >
+                  {loggingOut ? "Signing out..." : "Log out"}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-4">
+              <div className="metric-cell">
+                <div className="eyebrow">Active Symbol</div>
+                <div className="mt-3 text-2xl font-semibold text-white">{symbol}</div>
+                <div className="mt-2 text-sm text-[var(--text-soft)]">
+                  {mergedAnalysis?.company_name || "Loading company profile"}
+                </div>
+              </div>
+
+              <div className="metric-cell">
+                <div className="eyebrow">Price / Session</div>
+                <div className="mt-3 text-2xl font-semibold text-white">
+                  {mergedAnalysis ? `$${price.toFixed(2)}` : "Syncing"}
+                </div>
+                <div className={`mt-2 text-sm font-medium ${change >= 0 ? "signal-positive" : "signal-negative"}`}>
+                  {mergedAnalysis ? `${change >= 0 ? "+" : ""}${change.toFixed(2)}%` : "Waiting on feed"}
+                </div>
+              </div>
+
+              <div className="metric-cell">
+                <div className="eyebrow">Bias / Regime</div>
+                <div className="mt-3 text-lg font-semibold text-white">
+                  {mergedAnalysis?.bias.label || "Loading"}
+                </div>
+                <div className="mt-2 text-sm text-[var(--text-soft)]">
+                  {mergedAnalysis?.professional_analysis.regime?.replaceAll("_", " ") || "Context pending"}
+                </div>
+              </div>
+
+              <div className="metric-cell">
+                <div className="eyebrow">Structure</div>
+                <div className="mt-3 text-lg font-semibold text-white">
+                  {technical?.support_level != null && technical?.resistance_level != null
+                    ? `${technical.support_level.toFixed(2)} / ${technical.resistance_level.toFixed(2)}`
+                    : "Pending"}
+                </div>
+                <div className="mt-2 text-sm text-[var(--text-soft)]">
+                  {technical?.volatility_state || "volatility pending"} |{" "}
+                  {horizon === "short_term" ? "execution mode" : "thesis mode"}
                 </div>
               </div>
             </div>
           </div>
         </header>
 
-        <div className="grid gap-3 xl:grid-cols-[260px_minmax(0,1fr)] 2xl:grid-cols-[260px_minmax(0,1fr)_348px]">
-          <div className="order-3 xl:order-1 xl:row-span-2">
+        <div className="grid gap-4 2xl:grid-cols-[270px_minmax(0,1.12fr)_390px]">
+          <div className="order-2 2xl:order-1">
             <TickerSidebar
               symbol={symbol}
               horizon={horizon}
@@ -349,24 +394,7 @@ export default function WorkspacePage() {
             />
           </div>
 
-          <div ref={deskRef} className="order-1 min-w-0 space-y-3 xl:order-2">
-            {mergedAnalysis ? (
-              <div className="frame-shell reveal-up overflow-hidden px-4 py-3 lg:px-5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="desk-chip desk-chip-accent mono">{symbol}</span>
-                  <span className="desk-chip mono">
-                    {horizon === "short_term" ? "Short-term engine" : "Long-term engine"}
-                  </span>
-                  <span className="desk-chip mono">
-                    Levels {technical?.support_level?.toFixed(2) ?? "n/a"} /{" "}
-                    {technical?.resistance_level?.toFixed(2) ?? "n/a"}
-                  </span>
-                </div>
-              </div>
-            ) : null}
-
-            {mergedAnalysis ? <MetricCards analysis={mergedAnalysis} horizon={horizon} /> : null}
-
+          <div ref={deskRef} className="order-1 min-w-0 space-y-4 2xl:order-2">
             <ChartCard
               key={`${symbol}-${horizon}`}
               symbol={symbol}
@@ -377,35 +405,38 @@ export default function WorkspacePage() {
               horizon={horizon}
               loading={loadingAnalysis}
             />
-          </div>
 
-          <div ref={researchRef} className="order-2 min-w-0 xl:order-3 2xl:order-4">
-            {mergedAnalysis ? <InsightPanels analysis={mergedAnalysis} horizon={horizon} /> : null}
+            {mergedAnalysis ? <MetricCards analysis={mergedAnalysis} horizon={horizon} /> : null}
 
             {(loadingAnalysis || loadingNews) && !error ? (
-              <div className="frame-shell reveal-up reveal-delay-2 mt-3 px-4 py-3 text-sm text-cyan-100">
+              <div className="frame-shell reveal-up reveal-delay-2 px-4 py-3 text-sm text-slate-200">
                 {isAnalysisLoading(analysis)
-                  ? "Building the active research stack and refreshing catalysts..."
-                  : "Updating price, workflow, and news context..."}
+                  ? "Building the active read, refreshing catalysts, and syncing the portfolio layer..."
+                  : "Refreshing price, workflow, and news context..."}
               </div>
             ) : null}
 
             {error ? (
-              <div className="frame-shell reveal-up reveal-delay-2 mt-3 border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+              <div className="frame-shell reveal-up reveal-delay-2 border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
                 {error}
               </div>
             ) : null}
           </div>
 
-          <div ref={workflowRef} className="order-4 2xl:order-3 2xl:row-span-2">
-            <WorkspaceDock
-              session={session}
-              symbol={symbol}
-              horizon={horizon}
-              analysis={mergedAnalysis}
-              onActivateSymbol={setSymbol}
-              onActivateHorizon={setHorizon}
-            />
+          <div className="order-3 min-w-0 space-y-4 2xl:order-3">
+            <div ref={researchRef}>
+              {mergedAnalysis ? <InsightPanels analysis={mergedAnalysis} horizon={horizon} /> : null}
+            </div>
+            <div ref={workflowRef}>
+              <WorkspaceDock
+                session={session}
+                symbol={symbol}
+                horizon={horizon}
+                analysis={mergedAnalysis}
+                onActivateSymbol={setSymbol}
+                onActivateHorizon={setHorizon}
+              />
+            </div>
           </div>
         </div>
       </div>

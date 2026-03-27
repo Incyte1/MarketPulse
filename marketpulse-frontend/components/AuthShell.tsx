@@ -14,10 +14,16 @@ type AuthShellProps = {
   children: ReactNode;
 };
 
-const PLATFORM_POINTS = [
-  "Separate short-term and long-term engines",
-  "Catalyst ranking with confirmation and invalidation",
-  "Saved workspaces, alerts, and memo sync",
+const ACCESS_POINTS = [
+  "Short-horizon and long-horizon reads stay separate.",
+  "Catalyst review, confirmation, invalidation, and memo memory stay linked.",
+  "Portfolio ranking and execution preview are part of the desk, not side tools.",
+];
+
+const ACCESS_STATUS = [
+  { label: "Workspace", value: "Private" },
+  { label: "Session", value: "API-backed" },
+  { label: "State", value: "Persistent" },
 ];
 
 export default function AuthShell({
@@ -31,55 +37,65 @@ export default function AuthShell({
 }: AuthShellProps) {
   return (
     <main className="app-shell min-h-screen px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6">
-      <div className="mx-auto flex min-h-[calc(100svh-1.5rem)] max-w-[1260px] items-center">
-        <section className="command-shell reveal-up overflow-hidden p-0">
-          <div className="grid min-h-[760px] lg:min-h-[calc(100svh-3rem)] lg:grid-cols-[0.98fr_1.02fr]">
-            <div className="order-2 relative flex border-t border-white/10 px-5 py-6 sm:px-6 sm:py-7 lg:order-1 lg:border-t-0 lg:border-r lg:px-8 xl:px-10">
-              <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-[rgba(212,90,81,0.12)] via-[rgba(199,121,108,0.08)] to-transparent" />
+      <div className="mx-auto flex min-h-[calc(100svh-1.5rem)] max-w-[1440px] items-center">
+        <section className="command-shell reveal-up market-plane w-full overflow-hidden p-0">
+          <div className="grid min-h-[760px] lg:min-h-[calc(100svh-3rem)] lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="relative border-b border-white/10 px-5 py-6 sm:px-6 lg:border-b-0 lg:border-r lg:px-8 xl:px-12 xl:py-10">
+              <div className="hero-orbit !inset-auto !right-[-12%] !bottom-[-28%] !h-[460px] !w-[460px] opacity-70" />
 
-              <div className="relative mx-auto flex w-full max-w-[520px] flex-col justify-center">
-                <div className="flex items-start justify-start">
+              <div className="relative z-10 flex h-full flex-col justify-between">
+                <div>
                   <BrandLockup compact />
-                </div>
 
-                <div className="mt-10 max-w-[480px] sm:mt-12">
-                  <div className="eyebrow">{eyebrow}</div>
-                  <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
-                    {title}
-                  </h1>
-                  <p className="mt-4 max-w-xl text-sm leading-7 text-slate-300 lg:text-base">
-                    {subtitle}
-                  </p>
-                </div>
+                  <div className="mt-10 max-w-[520px]">
+                    <div className="desk-chip desk-chip-info mono">{eyebrow}</div>
+                    <h1 className="mt-5 text-[2.65rem] font-semibold tracking-[-0.07em] text-white sm:text-[3.4rem] lg:text-[4.3rem]">
+                      {title}
+                    </h1>
+                    <p className="mt-5 max-w-[520px] text-sm leading-8 text-[var(--text-soft)] sm:text-base">
+                      {subtitle}
+                    </p>
+                  </div>
 
-                <div className="mt-10 grid gap-3">
-                  {PLATFORM_POINTS.map((item, index) => (
-                    <div key={item} className="interactive-row flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold text-white">
-                        {index + 1}
+                  <div className="mt-8 space-y-3">
+                    {ACCESS_POINTS.map((item, index) => (
+                      <div key={item} className="interactive-row flex items-start gap-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-semibold text-white">
+                          {index + 1}
+                        </div>
+                        <div className="pt-1 text-sm leading-7 text-slate-200">{item}</div>
                       </div>
-                      <div className="text-sm text-slate-200">{item}</div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                  {ACCESS_STATUS.map((item) => (
+                    <div key={item.label} className="metric-cell">
+                      <div className="eyebrow">{item.label}</div>
+                      <div className="mt-3 text-lg font-semibold text-white">{item.value}</div>
                     </div>
                   ))}
                 </div>
               </div>
-
             </div>
 
-            <div className="order-1 flex items-center justify-center px-5 py-6 sm:px-6 sm:py-7 lg:order-2 lg:px-8 xl:px-10">
-              <div className="w-full max-w-[500px] rounded-[28px] border border-white/10 bg-black/25 p-5 sm:p-6 lg:p-7">
-                <div className="mb-6 flex items-center gap-2">
-                  <span className="desk-chip desk-chip-accent mono">Secure access</span>
-                  <span className="desk-chip mono">Workspace authentication</span>
+            <div className="relative flex items-center justify-center px-5 py-6 sm:px-6 lg:px-8 xl:px-12 xl:py-10">
+              <div className="relative z-10 w-full max-w-[520px]">
+                <div className="mb-4 flex flex-wrap gap-2">
+                  <span className="desk-chip desk-chip-accent mono">Secure Access</span>
+                  <span className="desk-chip mono">Account authenticated against API</span>
                 </div>
 
-                {children}
+                <div className="frame-shell px-5 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
+                  {children}
 
-                <div className="mt-6 border-t border-white/10 pt-5 text-sm text-slate-400">
-                  {altPrompt}{" "}
-                  <Link href={altHref} className="text-[#f1c8c1] underline underline-offset-4">
-                    {altLabel}
-                  </Link>
+                  <div className="mt-6 border-t border-white/10 pt-5 text-sm text-[var(--text-soft)]">
+                    {altPrompt}{" "}
+                    <Link href={altHref} className="text-[var(--accent)] underline underline-offset-4">
+                      {altLabel}
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>

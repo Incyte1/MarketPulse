@@ -62,12 +62,12 @@ const TAB_ITEMS: Record<SidebarTab, string[]> = {
 };
 
 const TAB_META: Record<SidebarTab, { label: string; note: string }> = {
-  favorites: { label: "Core", note: "Primary review queue" },
-  hot: { label: "Heat", note: "Momentum leaders" },
-  trending: { label: "Catalysts", note: "Headline pressure" },
-  etfs: { label: "ETFs", note: "Index proxies" },
-  tech: { label: "Tech", note: "Mega-cap coverage" },
-  all: { label: "Universe", note: "Expanded coverage list" },
+  favorites: { label: "Core", note: "Default desk queue" },
+  hot: { label: "Heat", note: "Fast movers" },
+  trending: { label: "Catalysts", note: "Event pressure" },
+  etfs: { label: "ETFs", note: "Market proxies" },
+  tech: { label: "Tech", note: "Mega-cap tape" },
+  all: { label: "Universe", note: "Expanded coverage" },
 };
 
 const ETF_SET = new Set(["SPY", "QQQ", "IWM", "DIA"]);
@@ -116,20 +116,22 @@ export default function TickerSidebar({ symbol, horizon, onSelect, onAnalyze }: 
   const universeCount = useMemo(() => new Set(Object.values(TAB_ITEMS).flat()).size, []);
 
   return (
-    <aside className="h-full xl:self-start">
-      <section className="frame-shell reveal-up reveal-delay-1 flex min-h-0 flex-col overflow-hidden p-0 xl:h-full xl:min-h-[720px]">
-        <div className="border-b border-white/8 px-4 py-4">
+    <aside className="h-full 2xl:sticky 2xl:top-6">
+      <section className="frame-shell reveal-up reveal-delay-1 flex min-h-0 flex-col overflow-hidden p-0 2xl:min-h-[calc(100svh-3rem)]">
+        <div className="border-b border-white/10 px-4 py-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="eyebrow">Coverage Rail</div>
-              <div className="mt-1 text-base font-semibold text-white">Live review queue</div>
-              <div className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
-                Search a name or pick from the current review list.
+              <div className="eyebrow">Scanner Rail</div>
+              <div className="mt-2 text-lg font-semibold text-white">Coverage universe</div>
+              <div className="mt-2 text-sm leading-7 text-[var(--text-soft)]">
+                Search the tape or move through the active review buckets.
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <span className="desk-chip mono">{horizon === "short_term" ? "1D / 1H" : "1W / 1D"}</span>
-              <span className="desk-chip mono">{universeCount} names</span>
+              <span className="desk-chip desk-chip-info mono">
+                {horizon === "short_term" ? "1D / 1H" : "1W / 1D"}
+              </span>
+              <span className="desk-chip mono">{universeCount} symbols</span>
             </div>
           </div>
 
@@ -152,24 +154,24 @@ export default function TickerSidebar({ symbol, horizon, onSelect, onAnalyze }: 
                 className="text-input"
                 value={query}
                 onChange={(event) => setQuery(event.target.value.toUpperCase())}
-                placeholder="SPY"
+                placeholder="NVDA"
               />
-              <button className="action-button min-w-[74px]" type="submit">
+              <button className="action-button min-w-[78px]" type="submit">
                 Go
               </button>
             </div>
           </form>
         </div>
 
-        <div className="border-b border-white/8 px-3 py-3">
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6 xl:grid-cols-3">
+        <div className="border-b border-white/10 px-3 py-3">
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6 2xl:grid-cols-3">
             {(Object.keys(TAB_ITEMS) as SidebarTab[]).map((item) => (
               <button
                 key={item}
                 type="button"
-                className={`rounded-[14px] border px-2 py-2 text-xs transition ${
+                className={`rounded-[16px] border px-2 py-2.5 text-xs transition ${
                   tab === item
-                    ? "border-[var(--accent)]/30 bg-[var(--accent)]/12 text-white"
+                    ? "border-[rgba(134,248,111,0.24)] bg-[rgba(134,248,111,0.1)] text-white"
                     : "border-white/8 bg-white/[0.02] text-[var(--text-muted)] hover:border-white/16"
                 }`}
                 onClick={() => setTab(item)}
@@ -180,7 +182,7 @@ export default function TickerSidebar({ symbol, horizon, onSelect, onAnalyze }: 
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
           <div>
             <div className="text-sm font-semibold text-white">{TAB_META[tab].label}</div>
             <div className="mt-1 text-xs text-[var(--text-soft)]">{TAB_META[tab].note}</div>
@@ -197,8 +199,8 @@ export default function TickerSidebar({ symbol, horizon, onSelect, onAnalyze }: 
                 <button
                   key={item}
                   type="button"
-                  className={`interactive-row flex w-full items-center justify-between gap-3 rounded-[18px] px-3 py-3 text-left ${
-                    isActive ? "border-[var(--accent)]/30 bg-[var(--accent)]/10" : ""
+                  className={`interactive-row flex w-full items-center justify-between gap-3 text-left ${
+                    isActive ? "border-[rgba(134,248,111,0.24)] bg-[rgba(134,248,111,0.08)]" : ""
                   }`}
                   onClick={() => {
                     onSelect(item);
@@ -210,17 +212,17 @@ export default function TickerSidebar({ symbol, horizon, onSelect, onAnalyze }: 
                       <div className="text-sm font-semibold text-white">{item}</div>
                       <span
                         className={`h-2 w-2 rounded-full ${
-                          isActive ? "bg-[var(--accent)]" : "bg-white/16"
+                          isActive ? "bg-[var(--accent)]" : "bg-white/20"
                         }`}
                       />
                     </div>
-                    <div className="mt-1 text-xs uppercase tracking-[0.18em] text-[var(--text-dim)]">
+                    <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-[var(--text-dim)]">
                       {tickerCategory(item)}
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <div className="text-xs font-medium text-white">{isActive ? "Active" : "Open"}</div>
+                    <div className="text-xs font-medium text-white">{isActive ? "Live" : "Open"}</div>
                     <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-[var(--text-soft)]">
                       {horizon === "short_term" ? "ST" : "LT"}
                     </div>

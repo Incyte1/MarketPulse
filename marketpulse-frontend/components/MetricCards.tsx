@@ -46,7 +46,7 @@ export default function MetricCards({ analysis, horizon = "short_term" }: Props)
         label: "Bias",
         headline: analysis.bias.label,
         subline: `${analysis.bias.internal_score}/${analysis.bias.total_score} composite`,
-        detail: `Trend ${tech.trend_medium}, momentum ${tech.momentum_state}, and structure ${tech.structure_score} are driving the active bias.`,
+        detail: `Trend ${tech.trend_medium}, momentum ${tech.momentum_state}, and structure ${tech.structure_score} are defining the current bias.`,
         tone: toneClass(analysis.bias.label),
       },
       {
@@ -61,19 +61,19 @@ export default function MetricCards({ analysis, horizon = "short_term" }: Props)
       },
       {
         id: "driver",
-        label: "Driver",
+        label: "Primary Driver",
         headline: readable(pro.primary_driver),
         subline: `${pro.secondary_drivers.length} secondary factors`,
         detail: pro.secondary_drivers.length
           ? `Secondary drivers: ${pro.secondary_drivers.join(" | ")}.`
           : "No secondary drivers are listed for the current read.",
-        tone: "text-[#f0d7d1]",
+        tone: "text-[var(--accent-neutral)]",
       },
       {
         id: "plan",
-        label: "Plan",
+        label: horizon === "short_term" ? "Execution Plan" : "Thesis Plan",
         headline: readable(guidance.preferred_direction),
-        subline: horizon === "short_term" ? "Execution mode" : "Thesis mode",
+        subline: guidance.headline || "Plan note pending",
         detail: guidance.warnings.length
           ? `Warnings: ${guidance.warnings.join(" | ")}.`
           : guidance.summary || "No active warning set.",
@@ -86,44 +86,39 @@ export default function MetricCards({ analysis, horizon = "short_term" }: Props)
 
   return (
     <section className="frame-shell reveal-up reveal-delay-1 overflow-hidden p-0">
-      <div className="border-b border-white/8 px-4 py-3 lg:px-5">
+      <div className="flex flex-col gap-3 border-b border-white/10 px-4 py-4 lg:flex-row lg:items-end lg:justify-between lg:px-5">
         <div>
-          <div className="eyebrow">Decision</div>
-          <div className="mt-1 text-sm text-[var(--text-soft)]">
-            Bias, conviction, driver, and plan for the active horizon.
+          <div className="eyebrow">Decision Strip</div>
+          <div className="mt-1 text-base font-semibold text-white">
+            Bias, conviction, driver, and active plan
           </div>
         </div>
+        <div className="desk-chip mono">{analysis.technical_context.volatility_state || "pending"}</div>
       </div>
 
-      <div className="grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-px bg-white/5 p-px md:grid-cols-2 xl:grid-cols-4">
         {tape.map((item) => (
           <button
             key={item.id}
             type="button"
-            className={`sub-surface px-4 py-4 text-left transition hover:border-white/16 ${
-              activeItem === item.id ? "border-[var(--accent)]/30 bg-[var(--accent)]/10" : ""
+            className={`min-h-[152px] rounded-[22px] border border-transparent px-4 py-4 text-left transition ${
+              activeItem === item.id
+                ? "bg-[rgba(134,248,111,0.08)]"
+                : "bg-[rgba(8,14,21,0.92)] hover:bg-[rgba(255,255,255,0.03)]"
             }`}
             onClick={() => setActiveItem(item.id)}
           >
-            <div className="flex items-center justify-between gap-3">
-              <div className="field-label">{item.label}</div>
-              {activeItem === item.id ? <div className="desk-chip mono">Focus</div> : null}
-            </div>
-            <div className={`mt-3 text-lg font-semibold ${item.tone}`}>{item.headline}</div>
-            <div className="mt-2 text-sm text-[var(--text-soft)]">{item.subline}</div>
+            <div className="eyebrow">{item.label}</div>
+            <div className={`mt-4 text-xl font-semibold ${item.tone}`}>{item.headline}</div>
+            <div className="mt-3 text-sm leading-7 text-[var(--text-soft)]">{item.subline}</div>
           </button>
         ))}
       </div>
 
-      <div className="border-t border-white/8 px-4 py-3 lg:px-5">
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <div className="field-label">{activeDetail.label}</div>
-            <div className="mt-2 text-sm leading-7 text-slate-200">{activeDetail.detail}</div>
-          </div>
-          <div className="desk-chip mono self-start lg:self-auto">
-            {analysis.technical_context.volatility_state || "volatility pending"}
-          </div>
+      <div className="border-t border-white/10 px-4 py-4 lg:px-5">
+        <div className="grid gap-3 lg:grid-cols-[180px_minmax(0,1fr)] lg:items-start">
+          <div className="eyebrow">{activeDetail.label}</div>
+          <div className="text-sm leading-7 text-slate-200">{activeDetail.detail}</div>
         </div>
       </div>
     </section>
