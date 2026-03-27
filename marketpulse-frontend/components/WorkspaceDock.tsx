@@ -653,6 +653,10 @@ export default function WorkspaceDock({
     }));
   }
 
+  const topOpportunities =
+    portfolioReport?.top_opportunities.slice(0, 3) ?? portfolio?.buy_queue.slice(0, 3) ?? [];
+  const topActions = executionPreview?.proposed_actions.slice(0, 3) ?? [];
+
   function renderPortfolioGroup(
     title: string,
     subtitle: string,
@@ -750,43 +754,41 @@ export default function WorkspaceDock({
 
   if (!session) {
     return (
-      <aside className="space-y-4 xl:self-start">
-        <section className="frame-shell reveal-up reveal-delay-2 p-4 lg:p-5">
-          <div className="eyebrow">Workflow Layer</div>
-          <div className="mt-2 text-xl font-semibold text-white">Workflow dock</div>
-          <p className="mt-3 text-sm leading-6 text-slate-400">
-            Sign in to turn the live market surface into a persistent desk with saved workspaces,
-            alerts, and source-linked memo flow.
-          </p>
+      <aside className="space-y-3 xl:self-start">
+        <section className="terminal-panel reveal-up reveal-delay-2 overflow-hidden">
+          <div className="terminal-header">
+            <div>
+              <div className="eyebrow">Operator Board</div>
+              <div className="mt-1 text-base font-semibold text-white">Persistent workspace tools</div>
+            </div>
+            <div className="desk-chip mono">Auth Required</div>
+          </div>
 
-          <div className="mt-4 grid gap-2">
-            <div className="interactive-row">
-              <div className="text-sm font-semibold text-white">Saved workspaces</div>
-              <div className="mt-1 text-sm text-slate-400">
-                Restore active symbol, horizon, and memo context.
+          <div className="terminal-list">
+            <div className="terminal-row">
+              <div className="terminal-kpi-label">What unlocks after sign-in</div>
+              <div className="mt-3 text-sm leading-7 text-slate-300">
+                Save desks, restore symbol and horizon state, build alert rules, and keep source-linked investment notes attached to the active workflow.
               </div>
             </div>
-            <div className="interactive-row">
-              <div className="text-sm font-semibold text-white">Alert rules</div>
-              <div className="mt-1 text-sm text-slate-400">
-                Save breakouts, breakdowns, and VWAP reclaim levels.
-              </div>
-            </div>
-            <div className="interactive-row">
-              <div className="text-sm font-semibold text-white">Source-linked memos</div>
-              <div className="mt-1 text-sm text-slate-400">
-                Build a research note with linked catalysts instead of loose copy.
+            <div className="terminal-row">
+              <div className="grid gap-2">
+                <div className="terminal-note">Saved workspaces with symbol and horizon memory.</div>
+                <div className="terminal-note">Alert rules built from current support, resistance, and VWAP levels.</div>
+                <div className="terminal-note">Source-linked memos tied to the catalyst stream.</div>
               </div>
             </div>
           </div>
 
-          <div className="mt-5 flex gap-3">
+          <div className="px-4 py-4">
+            <div className="flex gap-3">
             <Link href="/login" className="action-button-secondary">
               Login
             </Link>
             <Link href="/register" className="action-button">
               Create {brand.name} Account
             </Link>
+            </div>
           </div>
         </section>
       </aside>
@@ -794,47 +796,41 @@ export default function WorkspaceDock({
   }
 
   return (
-    <aside className="space-y-4 xl:self-start">
-      <section className="frame-shell reveal-up reveal-delay-2 p-4 lg:p-5">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="eyebrow">Workflow Layer</div>
-              <div className="mt-2 text-xl font-semibold text-white">Workflow dock</div>
-              <div className="mt-1 text-sm text-slate-400">
-                Save desk state, alerts, and memo context without repeating the live market read.
-              </div>
+    <aside className="space-y-3 xl:self-start">
+      <section className="terminal-panel reveal-up reveal-delay-2 overflow-hidden">
+        <div className="terminal-header">
+          <div>
+            <div className="eyebrow">Operator Board</div>
+            <div className="mt-1 text-base font-semibold text-white">
+              Workspace switching, ranked queue, and execution state
             </div>
-            {detail ? <div className="desk-chip mono">{detail.workspace.name}</div> : null}
           </div>
+          {detail ? <div className="desk-chip mono">{detail.workspace.name}</div> : null}
+        </div>
 
-          <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="border-b border-white/8 overflow-x-auto">
+          <div className="ticker-strip">
             {workspaces.map((workspace) => (
               <button
                 key={workspace.id}
                 type="button"
-                className={`min-w-[152px] rounded-[14px] border px-3 py-2 text-left text-sm transition ${
-                  activeWorkspaceId === workspace.id
-                    ? "border-[var(--accent)]/28 bg-[var(--accent)]/10 text-white"
-                    : "border-white/10 bg-white/5 text-slate-300 hover:border-white/20"
-                }`}
+                className={`ticker-pill ${activeWorkspaceId === workspace.id ? "ticker-pill-active" : ""}`}
                 onClick={() => setActiveWorkspaceId(workspace.id)}
               >
-                <div className="font-medium">{workspace.name}</div>
-                <div className="mt-1 text-[11px] uppercase tracking-[0.16em] text-slate-500">
-                  {workspace.is_default ? "Default Desk" : formatHorizon(workspace.selected_horizon)}
-                </div>
+                {workspace.name}
               </button>
             ))}
           </div>
+        </div>
 
+        <div className="border-b border-white/8 px-4 py-4">
           <div className="flex gap-2">
             <input
               className="text-input"
-              placeholder="New desk name"
+              placeholder="Create new workspace"
               value={createName}
               onChange={(event) => setCreateName(event.target.value)}
-              />
+            />
             <button
               type="button"
               className="action-button min-w-[96px]"
@@ -844,108 +840,164 @@ export default function WorkspaceDock({
               Create
             </button>
           </div>
+        </div>
 
-          {detail ? (
-            <div className="grid gap-2 sm:grid-cols-4">
-              <div className="interactive-row">
-                <div className="eyebrow">Watchlist</div>
-                <div className="mt-2 text-base font-semibold text-white">
-                  {detail.watchlist.length}
-                </div>
-                <div className="mt-1 text-xs text-slate-500">Tracked symbols</div>
-              </div>
-              <div className="interactive-row">
-                <div className="eyebrow">Alerts</div>
-                <div className="mt-2 text-base font-semibold text-white">
-                  {detail.alerts.length}
-                </div>
-                <div className="mt-1 text-xs text-slate-500">Saved triggers</div>
-              </div>
-              <div className="interactive-row">
-                <div className="eyebrow">Memo</div>
-                <div className="mt-2 text-base font-semibold text-white">
-                  {memoSourceCount}
-                </div>
-                <div className="mt-1 text-xs text-slate-500">Linked sources</div>
-              </div>
-              <div className="interactive-row">
-                <div className="eyebrow">Portfolio</div>
-                <div className="mt-2 text-base font-semibold text-white">
-                  {portfolio?.buy_queue.length ?? 0}
-                </div>
-                <div className="mt-1 text-xs text-slate-500">
-                  {portfolio ? `${portfolio.capacity_limit} active slots` : "Loading queue"}
-                </div>
-              </div>
+        <div className="terminal-pair-grid sm:grid-cols-2">
+          <div className="terminal-pair">
+            <div>
+              <div className="terminal-kpi-label">Coverage</div>
+              <div className="mt-2 text-sm font-semibold text-white">{detail?.watchlist.length ?? 0} names</div>
             </div>
-          ) : null}
+            <button type="button" className="terminal-pill" onClick={handleAddCurrentSymbol}>
+              Add {symbol}
+            </button>
+          </div>
+          <div className="terminal-pair">
+            <div>
+              <div className="terminal-kpi-label">Alerts</div>
+              <div className="mt-2 text-sm font-semibold text-white">{detail?.alerts.length ?? 0} armed</div>
+            </div>
+            <div className="text-sm text-[var(--text-soft)]">{memoSourceCount} memo sources</div>
+          </div>
+          <div className="terminal-pair">
+            <div>
+              <div className="terminal-kpi-label">Portfolio</div>
+              <div className="mt-2 text-sm font-semibold text-white">{portfolio?.buy_queue.length ?? 0} buys</div>
+            </div>
+            <div className="text-sm text-[var(--text-soft)]">
+              {portfolio ? `${portfolio.capacity_limit} slots` : "Syncing"}
+            </div>
+          </div>
+          <div className="terminal-pair">
+            <div>
+              <div className="terminal-kpi-label">Selection</div>
+              <div className="mt-2 text-sm font-semibold text-white">{symbol}</div>
+            </div>
+            <button
+              type="button"
+              className="terminal-pill"
+              onClick={() => onActivateHorizon(horizon === "short_term" ? "long_term" : "short_term")}
+            >
+              {formatHorizon(horizon)}
+            </button>
+          </div>
+        </div>
 
-          <div className="inline-flex rounded-[16px] border border-white/10 bg-black/20 p-1">
+        <div className="border-b border-white/8 px-3 py-3">
+          <div className="grid grid-cols-2 gap-2">
             {(["overview", "portfolio", "watchlist", "alerts", "memo"] as DockTab[]).map((tab) => (
               <button
                 key={tab}
                 type="button"
-                className={`inspector-tab ${activeTab === tab ? "inspector-tab-active" : ""}`}
+                className={`surface-tab ${activeTab === tab ? "surface-tab-active" : ""}`}
                 onClick={() => setActiveTab(tab)}
               >
                 {tab === "overview"
-                  ? "Desk"
+                  ? "Board"
                   : tab === "portfolio"
-                    ? "Portfolio"
-                  : tab === "watchlist"
-                    ? "Watchlist"
-                    : tab === "alerts"
-                      ? "Alerts"
-                      : "Memo"}
+                    ? "Queue"
+                    : tab === "watchlist"
+                      ? "Coverage"
+                      : tab === "alerts"
+                        ? "Alerts"
+                        : "Memo"}
               </button>
             ))}
           </div>
+        </div>
 
-          {activeTab === "overview" ? (
-            <div className="grid gap-2">
-              <div className="interactive-row">
-                <div className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-                  Active desk
-                </div>
-                <div className="mt-2 text-sm leading-7 text-slate-200">
-                  {detail
-                    ? `${detail.workspace.name} stores the saved watchlist, alert rules, and memo context for this review flow.`
-                    : "Workspace detail is loading."}
-                </div>
+        {activeTab === "overview" ? (
+          <div className="terminal-list">
+            <div className="terminal-row">
+              <div className="terminal-kpi-label">Active Workspace</div>
+              <div className="mt-2 text-sm font-semibold text-white">
+                {detail?.workspace.name || "Workspace detail is loading"}
               </div>
-              <div className="interactive-row">
-                <div className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-                  Last memo save
-                </div>
-                <div className="mt-2 text-sm leading-7 text-slate-200">
-                  {detail?.memo.updated_at
-                    ? `Saved ${formatTime(detail.memo.updated_at)} with ${memoSourceCount} linked source${memoSourceCount === 1 ? "" : "s"}.`
-                    : "The memo has not been saved yet."}
-                </div>
-              </div>
-              <div className="interactive-row">
-                <div className="text-[11px] uppercase tracking-[0.18em] text-slate-500">
-                  Portfolio engine
-                </div>
-                <div className="mt-2 text-sm leading-7 text-slate-200">
-                  {portfolio
-                    ? portfolio.overview
-                    : "Ranking the active watchlist into buy, hold, and exit queues."}
-                </div>
+              <div className="mt-2 text-sm leading-7 text-[var(--text-soft)]">
+                {detail
+                  ? `${detail.workspace.name} stores the symbol, horizon, memo state, and queue context for this review loop.`
+                  : "Workspace detail is loading."}
               </div>
             </div>
-          ) : null}
-        </div>
+
+            <div className="terminal-row">
+              <div className="terminal-kpi-label">Portfolio Engine</div>
+              <div className="mt-2 text-sm leading-7 text-[var(--text-soft)]">
+                {portfolio ? portfolio.overview : "Ranking the active watchlist into buy, hold, and exit queues."}
+              </div>
+            </div>
+
+            <div className="terminal-row">
+              <div className="terminal-kpi-label">Top Opportunities</div>
+              <div className="mt-3 space-y-3">
+                {topOpportunities.length ? (
+                  topOpportunities.map((item) => (
+                    <button
+                      key={`top-${item.symbol}`}
+                      type="button"
+                      className="flex w-full items-start justify-between gap-3 text-left"
+                      onClick={() => onActivateSymbol(item.symbol)}
+                    >
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="text-sm font-semibold text-white">{item.symbol}</div>
+                          <span className={`rounded-full border px-2 py-1 text-[11px] ${slotTone(item.slot_status).className}`}>
+                            {slotTone(item.slot_status).label}
+                          </span>
+                        </div>
+                        <div className="mt-2 text-xs leading-6 text-[var(--text-soft)]">{item.summary}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-white">{item.target_weight_percent.toFixed(1)}%</div>
+                        <div className="mt-1 text-xs text-[var(--text-soft)]">RS {item.relative_strength_20d.toFixed(1)}</div>
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <div className="text-sm text-slate-300">No clean top opportunities are ready right now.</div>
+                )}
+              </div>
+            </div>
+
+            <div className="terminal-row">
+              <div className="terminal-kpi-label">Execution Preview</div>
+              <div className="mt-3 space-y-3">
+                {topActions.length ? (
+                  topActions.map((action) => (
+                    <div key={`${action.action}-${action.symbol}`} className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold text-white">{action.symbol}</div>
+                        <div className="mt-1 text-xs leading-6 text-[var(--text-soft)]">{action.rationale}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className={`rounded-full border px-2 py-1 text-[11px] ${actionTone(action.action)}`}>
+                          {action.action.toUpperCase()}
+                        </div>
+                        <div className="mt-2 text-xs text-[var(--text-soft)]">
+                          {action.current_weight_percent.toFixed(1)}% to {action.target_weight_percent.toFixed(1)}%
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-sm text-slate-300">
+                    {loadingExecution ? "Building execution preview..." : "No execution changes are being proposed right now."}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : null}
       </section>
 
       <section
-        className={`frame-shell reveal-up reveal-delay-3 p-4 lg:p-5 ${
+        className={`terminal-panel reveal-up reveal-delay-3 p-4 lg:p-5 ${
           activeTab === "portfolio" ? "" : "hidden"
         }`}
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="eyebrow">Portfolio Engine</div>
+            <div className="eyebrow">Queue Board</div>
             <div className="mt-2 text-lg font-semibold text-white">Ranked action queue</div>
             <div className="mt-1 text-sm text-slate-400">
               Seero-style orchestration built on your existing ticker engine.
@@ -1153,14 +1205,14 @@ export default function WorkspaceDock({
       </section>
 
       <section
-        className={`frame-shell reveal-up reveal-delay-3 p-4 lg:p-5 ${
+        className={`terminal-panel reveal-up reveal-delay-3 p-4 lg:p-5 ${
           activeTab === "watchlist" ? "" : "hidden"
         }`}
       >
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="eyebrow">Watchlist</div>
-            <div className="mt-2 text-lg font-semibold text-white">Coverage queue</div>
+            <div className="eyebrow">Coverage Queue</div>
+            <div className="mt-2 text-lg font-semibold text-white">Saved symbol lineup</div>
           </div>
           <button
             type="button"
@@ -1211,13 +1263,13 @@ export default function WorkspaceDock({
       </section>
 
       <section
-        className={`frame-shell reveal-up reveal-delay-3 p-4 lg:p-5 ${
+        className={`terminal-panel reveal-up reveal-delay-3 p-4 lg:p-5 ${
           activeTab === "alerts" ? "" : "hidden"
         }`}
       >
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="eyebrow">Alerts</div>
+            <div className="eyebrow">Alert Grid</div>
             <div className="mt-2 text-lg font-semibold text-white">Execution rules</div>
           </div>
           <div className="desk-chip mono">
@@ -1284,13 +1336,13 @@ export default function WorkspaceDock({
       </section>
 
       <section
-        className={`frame-shell reveal-up reveal-delay-3 p-4 lg:p-5 ${
+        className={`terminal-panel reveal-up reveal-delay-3 p-4 lg:p-5 ${
           activeTab === "memo" ? "" : "hidden"
         }`}
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="eyebrow">Investment Memo</div>
+            <div className="eyebrow">Research Memory</div>
             <div className="mt-2 text-lg font-semibold text-white">Source-linked note</div>
           </div>
           <div className="text-right text-xs text-slate-500">

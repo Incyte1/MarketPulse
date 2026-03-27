@@ -8,8 +8,8 @@ type Props = {
   horizon?: "short_term" | "long_term";
 };
 
-type DetailTab = "overview" | "eli5";
-type InsightTab = "focus" | "ticker" | "macro" | "context";
+type DetailTab = "signal" | "simple";
+type InsightTab = "brief" | "ticker" | "macro" | "stack";
 
 type FocusItem = {
   id: string;
@@ -52,7 +52,7 @@ function articleSummary(article: InterpretedArticle, symbol: string) {
   );
 }
 
-function ArticleWorkspace({
+function ArticleConsole({
   articles,
   symbol,
   selectedIndex,
@@ -63,36 +63,36 @@ function ArticleWorkspace({
   selectedIndex: number;
   onSelect: (index: number) => void;
 }) {
-  const [detailTab, setDetailTab] = useState<DetailTab>("overview");
+  const [detailTab, setDetailTab] = useState<DetailTab>("signal");
 
   const activeArticle = articles[selectedIndex] ?? null;
 
   if (!articles.length || !activeArticle) {
     return (
-      <div className="interactive-row text-sm text-slate-300">
+      <div className="px-4 py-5 text-sm text-slate-300">
         No catalysts are available for the active stream.
       </div>
     );
   }
 
   return (
-    <div className="grid h-full gap-3 xl:grid-cols-[320px_minmax(0,1fr)]">
-      <div className="sub-surface flex h-full min-h-[360px] flex-col overflow-hidden">
-        <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
+    <div className="grid min-h-[440px] xl:grid-cols-[300px_minmax(0,1fr)]">
+      <div className="border-b border-white/8 xl:border-r xl:border-b-0">
+        <div className="terminal-header">
           <div>
-            <div className="eyebrow">Article Queue</div>
-            <div className="mt-1 text-sm text-[var(--text-soft)]">{articles.length} live items</div>
+            <div className="eyebrow">Headline Queue</div>
+            <div className="mt-1 text-sm font-semibold text-white">{articles.length} live items</div>
           </div>
-          <span className="desk-chip mono">{symbol}</span>
+          <div className="desk-chip mono">{symbol}</div>
         </div>
 
-        <div className="flex-1 space-y-1 overflow-y-auto p-2">
+        <div className="terminal-list">
           {articles.map((article, index) => (
             <button
               key={articleKey(article, index)}
               type="button"
-              className={`interactive-row w-full rounded-[18px] px-3 py-3 text-left ${
-                selectedIndex === index ? "border-[var(--accent)]/30 bg-[var(--accent)]/10" : ""
+              className={`terminal-row w-full text-left transition ${
+                selectedIndex === index ? "terminal-row-active" : "hover:bg-white/[0.025]"
               }`}
               onClick={() => onSelect(index)}
             >
@@ -117,8 +117,8 @@ function ArticleWorkspace({
         </div>
       </div>
 
-      <div className="sub-surface flex h-full min-h-[360px] flex-col overflow-hidden">
-        <div className="flex flex-col gap-3 border-b border-white/8 px-4 py-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="min-w-0">
+        <div className="terminal-header">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span className={`rounded-full border px-2 py-1 text-[11px] ${toneBadge(activeArticle.direction)}`}>
@@ -131,9 +131,7 @@ function ArticleWorkspace({
               >
                 {prettyLabel(activeArticle.importance || activeArticle.impact)}
               </span>
-              <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 text-[11px] text-slate-300">
-                {prettyLabel(activeArticle.article_type)}
-              </span>
+              <span className="terminal-pill">{prettyLabel(activeArticle.article_type)}</span>
             </div>
             <div className="mt-3 text-lg font-semibold text-white">{activeArticle.title}</div>
             <div className="mt-2 text-sm text-[var(--text-soft)]">
@@ -142,22 +140,23 @@ function ArticleWorkspace({
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-[16px] border border-white/8 bg-black/20 p-1">
+            <div className="segmented-shell">
               <button
                 type="button"
-                className={`surface-tab ${detailTab === "overview" ? "surface-tab-active" : ""}`}
-                onClick={() => setDetailTab("overview")}
+                className={`surface-tab ${detailTab === "signal" ? "surface-tab-active" : ""}`}
+                onClick={() => setDetailTab("signal")}
               >
-                Overview
+                Signal
               </button>
               <button
                 type="button"
-                className={`surface-tab ${detailTab === "eli5" ? "surface-tab-active" : ""}`}
-                onClick={() => setDetailTab("eli5")}
+                className={`surface-tab ${detailTab === "simple" ? "surface-tab-active" : ""}`}
+                onClick={() => setDetailTab("simple")}
               >
-                Plain English
+                Plain
               </button>
             </div>
+
             {activeArticle.url ? (
               <a
                 href={activeArticle.url}
@@ -165,62 +164,74 @@ function ArticleWorkspace({
                 rel="noreferrer"
                 className="action-button-secondary"
               >
-                Read
+                Read Source
               </a>
             ) : null}
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
-          {detailTab === "overview" ? (
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
-              <div className="space-y-3">
-                <div className="sub-surface px-4 py-4">
-                  <div className="field-label">Why It Matters</div>
-                  <div className="mt-3 text-sm leading-7 text-slate-200">
-                    {articleSummary(activeArticle, symbol)}
-                  </div>
-                </div>
-                <div className="sub-surface px-4 py-4">
-                  <div className="field-label">Trade Relevance</div>
-                  <div className="mt-3 text-sm leading-7 text-slate-200">
-                    {activeArticle.trade_relevance ||
-                      `Use this item as context for ${symbol} until price confirms the setup.`}
-                  </div>
+        {detailTab === "signal" ? (
+          <div className="grid gap-0 xl:grid-cols-[minmax(0,1fr)_300px]">
+            <div className="terminal-list">
+              <div className="terminal-row">
+                <div className="terminal-kpi-label">Why It Matters</div>
+                <div className="mt-3 text-sm leading-7 text-slate-200">
+                  {articleSummary(activeArticle, symbol)}
                 </div>
               </div>
+              <div className="terminal-row">
+                <div className="terminal-kpi-label">Trade Relevance</div>
+                <div className="mt-3 text-sm leading-7 text-slate-200">
+                  {activeArticle.trade_relevance ||
+                    `Use this item as context for ${symbol} until price confirms the setup.`}
+                </div>
+              </div>
+              <div className="terminal-row">
+                <div className="terminal-kpi-label">Impact Scope</div>
+                <div className="mt-3 text-sm leading-7 text-slate-200">
+                  {activeArticle.impact_area?.length
+                    ? activeArticle.impact_area.join(" | ")
+                    : `Impact scope has not been assigned yet for ${symbol}.`}
+                </div>
+              </div>
+            </div>
 
-              <div className="space-y-3">
-                <div className="sub-surface border-emerald-500/15 bg-emerald-500/5 px-4 py-4">
-                  <div className="field-label text-emerald-300">Confirmation</div>
-                  <div className="mt-3 text-sm leading-7 text-slate-200">
-                    {activeArticle.confirmation_to_watch ||
-                      `Wait for price confirmation before escalating this headline into an active ${symbol} trade.`}
-                  </div>
+            <div className="border-t border-white/8 xl:border-t-0 xl:border-l">
+              <div className="terminal-row">
+                <div className="terminal-kpi-label">Confirmation</div>
+                <div className="mt-3 text-sm leading-7 text-slate-200">
+                  {activeArticle.confirmation_to_watch ||
+                    `Wait for price confirmation before escalating this headline into an active ${symbol} trade.`}
                 </div>
-                <div className="sub-surface border-rose-500/15 bg-rose-500/5 px-4 py-4">
-                  <div className="field-label text-rose-300">Invalidation</div>
-                  <div className="mt-3 text-sm leading-7 text-slate-200">
-                    {activeArticle.invalidation_to_watch ||
-                      `If price rejects the move, keep this headline as background context instead of a live signal.`}
-                  </div>
+              </div>
+              <div className="terminal-row">
+                <div className="terminal-kpi-label">Invalidation</div>
+                <div className="mt-3 text-sm leading-7 text-slate-200">
+                  {activeArticle.invalidation_to_watch ||
+                    `If price rejects the move, keep this headline as background context instead of a live signal.`}
+                </div>
+              </div>
+              <div className="terminal-row">
+                <div className="terminal-kpi-label">Time Horizon</div>
+                <div className="mt-3 text-sm leading-7 text-slate-200">
+                  {prettyLabel(activeArticle.time_horizon)} | {prettyLabel(activeArticle.market_scope)}
                 </div>
               </div>
             </div>
-          ) : (
-            <div className="sub-surface border-cyan-500/15 bg-cyan-500/5 px-5 py-5 text-sm leading-7 text-slate-100">
-              {activeArticle.explanation ||
-                `Simple version: this story matters only if the chart starts confirming it for ${symbol}.`}
-            </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="px-4 py-5 text-sm leading-7 text-slate-100 sm:px-5">
+            {activeArticle.explanation ||
+              `Simple version: this story matters only if the chart starts confirming it for ${symbol}.`}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 export default function InsightPanels({ analysis, horizon = "short_term" }: Props) {
-  const [activeTab, setActiveTab] = useState<InsightTab>("focus");
+  const [activeTab, setActiveTab] = useState<InsightTab>("brief");
   const [selectedTickerIndex, setSelectedTickerIndex] = useState(0);
   const [selectedMacroIndex, setSelectedMacroIndex] = useState(0);
 
@@ -254,12 +265,21 @@ export default function InsightPanels({ analysis, horizon = "short_term" }: Prop
           "Tactical stance will populate once the engine finishes the read.",
         tone: toneBadge(analysis.bias.confidence_label),
       },
+      {
+        id: "driver",
+        label: "Driver",
+        title: prettyLabel(analysis.professional_analysis.primary_driver),
+        body: analysis.professional_analysis.secondary_drivers.length
+          ? analysis.professional_analysis.secondary_drivers.join(" | ")
+          : "No secondary drivers are listed for the current read.",
+        tone: "border-white/10 bg-white/[0.04] text-slate-200",
+      },
     ];
 
     if (tickerCatalysts[0]) {
       items.push({
         id: "ticker",
-        label: "Ticker",
+        label: "Ticker Feed",
         title: tickerCatalysts[0].title,
         body: articleSummary(tickerCatalysts[0], analysis.symbol),
         tone: toneBadge(tickerCatalysts[0].direction),
@@ -269,7 +289,7 @@ export default function InsightPanels({ analysis, horizon = "short_term" }: Prop
     if (macroDrivers[0]) {
       items.push({
         id: "macro",
-        label: "Macro",
+        label: "Macro Feed",
         title: macroDrivers[0].title,
         body: articleSummary(macroDrivers[0], analysis.symbol),
         tone: toneBadge(macroDrivers[0].direction),
@@ -280,184 +300,211 @@ export default function InsightPanels({ analysis, horizon = "short_term" }: Prop
   }, [analysis, horizon, macroDrivers, tickerCatalysts]);
 
   return (
-    <section className="frame-shell reveal-up reveal-delay-3 overflow-hidden p-0">
-      <div className="flex flex-col gap-4 border-b border-white/8 px-4 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-5">
+    <section className="terminal-panel reveal-up reveal-delay-3 overflow-hidden">
+      <div className="terminal-header">
         <div>
-          <div className="eyebrow">Research Terminal</div>
-          <div className="mt-1 text-lg font-semibold text-white">Catalysts, thesis, and context</div>
+          <div className="eyebrow">Research Console</div>
+          <div className="mt-1 text-base font-semibold text-white">
+            Catalyst tape, model context, and technical stack
+          </div>
         </div>
 
-        <div className="inline-flex rounded-[16px] border border-white/8 bg-black/20 p-1">
-          {(["focus", "ticker", "macro", "context"] as InsightTab[]).map((tab) => (
+        <div className="segmented-shell">
+          {(["brief", "ticker", "macro", "stack"] as InsightTab[]).map((tab) => (
             <button
               key={tab}
               type="button"
               className={`surface-tab ${activeTab === tab ? "surface-tab-active" : ""}`}
               onClick={() => setActiveTab(tab)}
             >
-              {tab === "focus"
-                ? "Focus"
+              {tab === "brief"
+                ? "Brief"
                 : tab === "ticker"
-                  ? "Ticker Catalysts"
+                  ? "Ticker Feed"
                   : tab === "macro"
-                    ? "Macro Drivers"
-                    : "Trade Context"}
+                    ? "Macro Feed"
+                    : "Model Stack"}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="p-3 lg:p-4">
-        {activeTab === "focus" ? (
-          <div className="grid gap-3 xl:grid-cols-[minmax(0,1.08fr)_0.92fr]">
-            <div className="sub-surface px-4 py-4">
-              <div className="field-label">Professional Read</div>
+      {activeTab === "brief" ? (
+        <div className="grid xl:grid-cols-[minmax(0,1.15fr)_0.85fr]">
+          <div className="terminal-list border-b border-white/8 xl:border-r xl:border-b-0">
+            <div className="terminal-row">
+              <div className="terminal-kpi-label">Executive Summary</div>
               <div className="mt-3 text-sm leading-8 text-slate-100">
                 {analysis.professional_analysis.executive_summary ||
                   "No executive summary is available yet."}
               </div>
-
-              <div className="mt-4 sub-surface px-4 py-4">
-                <div className="field-label">Plain English</div>
-                <div className="mt-3 text-sm leading-7 text-slate-200">
-                  {analysis.professional_analysis.plain_english_summary ||
-                    "No plain-English summary is available yet."}
-                </div>
+            </div>
+            <div className="terminal-row">
+              <div className="terminal-kpi-label">Plain English</div>
+              <div className="mt-3 text-sm leading-7 text-slate-200">
+                {analysis.professional_analysis.plain_english_summary ||
+                  "No plain-English summary is available yet."}
               </div>
             </div>
-
-            <div className="grid gap-3">
-              {focusItems.map((item) => (
-                <div key={item.id} className="sub-surface px-4 py-4">
-                  <div className="flex items-center gap-2">
-                    <span className={`rounded-full border px-2 py-1 text-[11px] ${item.tone}`}>
-                      {item.label}
-                    </span>
+            <div className="terminal-row">
+              <div className="terminal-kpi-label">Warning Set</div>
+              <div className="mt-3 space-y-2">
+                {(analysis.guidance.warnings.length
+                  ? analysis.guidance.warnings
+                  : ["No active warning set."]).map((item) => (
+                  <div key={item} className="terminal-note">
+                    {item}
                   </div>
-                  <div className="mt-3 text-base font-semibold text-white">{item.title}</div>
-                  <div className="mt-3 text-sm leading-7 text-slate-300">{item.body}</div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-        ) : null}
 
-        {activeTab === "ticker" ? (
-          <ArticleWorkspace
-            key={`ticker-${analysis.symbol}-${safeTickerIndex}`}
-            articles={tickerCatalysts}
-            symbol={analysis.symbol}
-            selectedIndex={safeTickerIndex}
-            onSelect={setSelectedTickerIndex}
-          />
-        ) : null}
-
-        {activeTab === "macro" ? (
-          <ArticleWorkspace
-            key={`macro-${analysis.symbol}-${safeMacroIndex}`}
-            articles={macroDrivers}
-            symbol={analysis.symbol}
-            selectedIndex={safeMacroIndex}
-            onSelect={setSelectedMacroIndex}
-          />
-        ) : null}
-
-        {activeTab === "context" ? (
-          <div className="grid gap-3 xl:grid-cols-[minmax(0,0.9fr)_1.1fr]">
-            <div className="space-y-3">
-              <div className="sub-surface px-4 py-4">
-                <div className="field-label">Market Context</div>
-                <div className="mt-4 grid gap-3">
-                  <div>
-                    <div className="field-label">Regime</div>
-                    <div className="mt-2 text-sm leading-7 text-slate-200">
-                      {prettyLabel(analysis.professional_analysis.regime)} |{" "}
-                      {prettyLabel(technical.regime_state)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="field-label">Volatility</div>
-                    <div className="mt-2 text-sm leading-7 text-slate-200">
-                      {prettyLabel(technical.volatility_state)} | ATR {technical.atr?.toFixed(2) ?? "n/a"}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="field-label">Momentum</div>
-                    <div className="mt-2 text-sm leading-7 text-slate-200">
-                      {prettyLabel(technical.momentum_state)} | MACD {technical.macd?.toFixed(4) ?? "n/a"}
-                    </div>
-                  </div>
+          <div className="terminal-list">
+            {focusItems.map((item) => (
+              <div key={item.id} className="terminal-row">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className={`rounded-full border px-2 py-1 text-[11px] ${item.tone}`}>
+                    {item.label}
+                  </span>
                 </div>
+                <div className="mt-3 text-base font-semibold text-white">{item.title}</div>
+                <div className="mt-3 text-sm leading-7 text-slate-300">{item.body}</div>
               </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
-              <div className="sub-surface px-4 py-4">
-                <div className="field-label">Confirmation</div>
-                <div className="mt-3 text-sm leading-7 text-slate-200">
-                  {analysis.professional_analysis.confirmation.length
-                    ? analysis.professional_analysis.confirmation.join(" | ")
-                    : "No confirmation factors are listed."}
-                </div>
-              </div>
+      {activeTab === "ticker" ? (
+        <ArticleConsole
+          key={`ticker-${analysis.symbol}-${safeTickerIndex}`}
+          articles={tickerCatalysts}
+          symbol={analysis.symbol}
+          selectedIndex={safeTickerIndex}
+          onSelect={setSelectedTickerIndex}
+        />
+      ) : null}
 
-              <div className="sub-surface px-4 py-4">
-                <div className="field-label">Invalidation</div>
-                <div className="mt-3 text-sm leading-7 text-slate-200">
-                  {analysis.professional_analysis.invalidation.length
-                    ? analysis.professional_analysis.invalidation.join(" | ")
-                    : "No invalidation factors are listed."}
-                </div>
+      {activeTab === "macro" ? (
+        <ArticleConsole
+          key={`macro-${analysis.symbol}-${safeMacroIndex}`}
+          articles={macroDrivers}
+          symbol={analysis.symbol}
+          selectedIndex={safeMacroIndex}
+          onSelect={setSelectedMacroIndex}
+        />
+      ) : null}
+
+      {activeTab === "stack" ? (
+        <div className="terminal-pair-grid md:grid-cols-2 xl:grid-cols-3">
+          <div className="terminal-pair">
+            <div>
+              <div className="terminal-kpi-label">Regime</div>
+              <div className="mt-2 text-sm text-white">
+                {prettyLabel(analysis.professional_analysis.regime)}
               </div>
             </div>
+            <div className="text-sm text-[var(--text-soft)]">{prettyLabel(technical.regime_state)}</div>
+          </div>
 
-            <div className="sub-surface px-4 py-4">
-              <div className="field-label">Technical Stack</div>
-              <div className="mt-4 grid gap-2 md:grid-cols-2">
-                <div className="sub-surface px-4 py-4">
-                  <div className="field-label">Engine</div>
-                  <div className="mt-2 text-sm leading-7 text-slate-200">
-                    {technical.data_range || "n/a"} using {technical.data_source_interval || "n/a"} bars
-                    <br />
-                    {technical.calibration_window || "Calibration unavailable"}
-                  </div>
-                </div>
-                <div className="sub-surface px-4 py-4">
-                  <div className="field-label">Levels</div>
-                  <div className="mt-2 text-sm leading-7 text-slate-200">
-                    Support {technical.support_level?.toFixed(2) ?? "n/a"}
-                    <br />
-                    Resistance {technical.resistance_level?.toFixed(2) ?? "n/a"}
-                  </div>
-                </div>
-                <div className="sub-surface px-4 py-4">
-                  <div className="field-label">Trend Stack</div>
-                  <div className="mt-2 text-sm leading-7 text-slate-200">
-                    {technical.fast_indicator_label || "Fast"} {technical.ema_20?.toFixed(2) ?? "n/a"}
-                    <br />
-                    {technical.medium_indicator_label || "Medium"} {technical.ema_50?.toFixed(2) ?? "n/a"}
-                    <br />
-                    {technical.slow_indicator_label || "Slow"} {technical.ema_200?.toFixed(2) ?? "n/a"}
-                  </div>
-                </div>
-                <div className="sub-surface px-4 py-4">
-                  <div className="field-label">Scoring</div>
-                  <div className="mt-2 text-sm leading-7 text-slate-200">
-                    Trend {technical.trend_score ?? "n/a"} | Momentum {technical.momentum_score ?? "n/a"}
-                    <br />
-                    Level {technical.level_score ?? "n/a"} | Exhaustion {technical.exhaustion_score ?? "n/a"}
-                  </div>
-                </div>
+          <div className="terminal-pair">
+            <div>
+              <div className="terminal-kpi-label">Volatility</div>
+              <div className="mt-2 text-sm text-white">
+                {prettyLabel(technical.volatility_state)}
               </div>
+            </div>
+            <div className="text-sm text-[var(--text-soft)]">ATR {technical.atr?.toFixed(2) ?? "n/a"}</div>
+          </div>
 
-              <div className="mt-3 sub-surface px-4 py-4 text-sm leading-7 text-slate-200">
-                VWAP {technical.vwap?.toFixed(2) ?? "n/a"} | Range position{" "}
-                {technical.range_position_percent?.toFixed(1) ?? "n/a"}% | StochRSI{" "}
-                {technical.stoch_rsi_k?.toFixed(1) ?? "n/a"} / {technical.stoch_rsi_d?.toFixed(1) ?? "n/a"} | Economic pressure{" "}
+          <div className="terminal-pair">
+            <div>
+              <div className="terminal-kpi-label">Momentum</div>
+              <div className="mt-2 text-sm text-white">
+                {prettyLabel(technical.momentum_state)}
+              </div>
+            </div>
+            <div className="text-sm text-[var(--text-soft)]">MACD {technical.macd?.toFixed(4) ?? "n/a"}</div>
+          </div>
+
+          <div className="terminal-pair">
+            <div>
+              <div className="terminal-kpi-label">Levels</div>
+              <div className="mt-2 text-sm text-white">
+                {technical.support_level?.toFixed(2) ?? "n/a"} /{" "}
+                {technical.resistance_level?.toFixed(2) ?? "n/a"}
+              </div>
+            </div>
+            <div className="text-sm text-[var(--text-soft)]">
+              VWAP {technical.vwap?.toFixed(2) ?? "n/a"}
+            </div>
+          </div>
+
+          <div className="terminal-pair">
+            <div>
+              <div className="terminal-kpi-label">Trend Stack</div>
+              <div className="mt-2 text-sm text-white">
+                {technical.fast_indicator_label || "Fast"} {technical.ema_20?.toFixed(2) ?? "n/a"}
+              </div>
+            </div>
+            <div className="text-sm text-[var(--text-soft)]">
+              {technical.medium_indicator_label || "Medium"} {technical.ema_50?.toFixed(2) ?? "n/a"}
+            </div>
+          </div>
+
+          <div className="terminal-pair">
+            <div>
+              <div className="terminal-kpi-label">Range Position</div>
+              <div className="mt-2 text-sm text-white">
+                {technical.range_position_percent?.toFixed(1) ?? "n/a"}%
+              </div>
+            </div>
+            <div className="text-sm text-[var(--text-soft)]">
+              Stoch {technical.stoch_rsi_k?.toFixed(1) ?? "n/a"} /{" "}
+              {technical.stoch_rsi_d?.toFixed(1) ?? "n/a"}
+            </div>
+          </div>
+
+          <div className="terminal-pair">
+            <div>
+              <div className="terminal-kpi-label">Scoring</div>
+              <div className="mt-2 text-sm text-white">
+                Trend {technical.trend_score ?? "n/a"} | Momentum {technical.momentum_score ?? "n/a"}
+              </div>
+            </div>
+            <div className="text-sm text-[var(--text-soft)]">
+              Structure {technical.structure_score ?? "n/a"} | Level {technical.level_score ?? "n/a"}
+            </div>
+          </div>
+
+          <div className="terminal-pair">
+            <div>
+              <div className="terminal-kpi-label">Calibration</div>
+              <div className="mt-2 text-sm text-white">
+                {technical.calibration_window || "Calibration unavailable"}
+              </div>
+            </div>
+            <div className="text-sm text-[var(--text-soft)]">
+              {technical.data_range || "n/a"} | {technical.data_source_interval || "n/a"}
+            </div>
+          </div>
+
+          <div className="terminal-pair">
+            <div>
+              <div className="terminal-kpi-label">Economic Pressure</div>
+              <div className="mt-2 text-sm text-white">
                 {prettyLabel(technical.economic_pressure)}
               </div>
             </div>
+            <div className="text-sm text-[var(--text-soft)]">
+              {analysis.professional_analysis.secondary_drivers.length
+                ? analysis.professional_analysis.secondary_drivers[0]
+                : "secondary factors pending"}
+            </div>
           </div>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </section>
   );
 }
