@@ -1208,6 +1208,40 @@ def test_session_creation_and_lookup(client: TestClient) -> None:
     assert lookup_body["mode"] == "development"
 
 
+def test_legacy_auth_login_and_me(client: TestClient) -> None:
+    response = client.post(
+        "/api/auth/login",
+        json={"email": "analyst@firm.com", "password": "bootstrap-token"}
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["token"]
+    assert body["user"]["email"] == "analyst@firm.com"
+    assert body["user"]["name"] == "Analyst"
+    assert "HttpOnly" in (response.headers.get("set-cookie") or "")
+
+    me_response = client.get(
+        "/api/auth/me",
+        headers={"authorization": f"Bearer {body['token']}"}
+    )
+
+    assert me_response.status_code == 200
+    me_body = me_response.json()
+    assert me_body["email"] == "analyst@firm.com"
+    assert me_body["handle"] == body["user"]["handle"]
+
+
+def test_legacy_auth_me_rejects_invalid_bearer(client: TestClient) -> None:
+    response = client.get(
+        "/api/auth/me",
+        headers={"authorization": "Bearer not-a-real-token"}
+    )
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Unauthorized"
+
+
 def test_logout(client: TestClient) -> None:
     start_session(client)
 

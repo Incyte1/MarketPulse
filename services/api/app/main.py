@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from app.config import settings
 from app.errors import AppError, logger as app_logger
 from app.migrations import prepare_database
+from app.routes.auth_compat import router as auth_compat_router
 from app.routes.explanations import router as explanations_router
 from app.routes.health import router as health_router
 from app.routes.market import router as market_router
@@ -108,6 +109,7 @@ async def handle_unexpected_error(_: Request, exc: Exception) -> JSONResponse:
 
 
 app.include_router(health_router)
+app.include_router(auth_compat_router)
 app.include_router(session_router)
 app.include_router(market_router)
 app.include_router(opportunities_router)

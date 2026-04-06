@@ -69,6 +69,39 @@ python -m pipeline plan
 - The Pages Functions layer can return local fallbacks or proxy to the Render API via `API_ORIGIN`.
 - Postgres is provisioned in Render by `render.yaml`.
 
+## Unveni production target
+
+This repo is now aligned for:
+
+- Render API: `https://unveni-api.onrender.com`
+- Cloudflare Pages frontend: `https://unveni.com`
+
+### Render
+
+Use the root `render.yaml` Blueprint. The production API service is configured to:
+
+- allow `https://unveni.com`, `https://www.unveni.com`, and `https://unveni-web.pages.dev` in `CORS_ORIGINS`
+- auto-apply pending database migrations on boot with `AUTO_APPLY_MIGRATIONS=true`
+- require you to set `ALPHA_VANTAGE_API_KEY` and `LOCAL_AUTH_TOKEN` in Render
+
+If `https://unveni-api.onrender.com` is returning `502`, redeploy the API after syncing the updated Blueprint and confirm the required secrets are present.
+
+### Cloudflare Pages
+
+The frontend deploy command is:
+
+```bash
+npm run deploy:web
+```
+
+After creating the `unveni-web` Pages project, set this production Pages variable for Functions:
+
+```text
+API_ORIGIN=https://unveni-api.onrender.com
+```
+
+Then attach the custom domain `unveni.com` in Cloudflare Pages. Because `unveni.com` is already a Cloudflare-managed zone, Cloudflare can create the required apex record during the Pages custom-domain flow.
+
 ## Production hardening next
 
 1. Replace mock providers in `services/pipeline` with licensed options, macro, and news ingestion modules.

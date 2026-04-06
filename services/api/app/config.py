@@ -14,11 +14,29 @@ IntradayEntitlement = Literal["delayed", "realtime"]
 OptionsProvider = Literal["disconnected", "alpaca"]
 
 
+def parse_bool_env(name: str, default: bool) -> bool:
+    raw_value = os.getenv(name)
+    if raw_value is None:
+        return default
+
+    normalized = raw_value.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+
+    raise ValueError(
+        f"Unsupported {name} value '{raw_value}'. Expected one of: "
+        "1, 0, true, false, yes, no, on, off."
+    )
+
+
 @dataclass(frozen=True)
 class Settings:
     app_name: str
     app_env: str
     cors_origins: tuple[str, ...]
+    auto_apply_migrations: bool
     data_provider: DataProvider
     options_provider: OptionsProvider
     default_entitlement: str
@@ -95,6 +113,10 @@ class Settings:
             app_name=os.getenv("APP_NAME", "Unveni API"),
             app_env=app_env,
             cors_origins=origins,
+            auto_apply_migrations=parse_bool_env(
+                "AUTO_APPLY_MIGRATIONS",
+                default=app_env == "development"
+            ),
             data_provider=raw_provider,
             options_provider=raw_options_provider,
             default_entitlement="delayed-demo",
@@ -114,10 +136,6 @@ class Settings:
             ),
             market_data_timeout_seconds=float(os.getenv("MARKET_DATA_TIMEOUT_SECONDS", "8"))
         )
-
-    @property
-    def auto_apply_migrations(self) -> bool:
-        return self.app_env == "development"
 
     @property
     def use_secure_cookies(self) -> bool:

@@ -9,10 +9,12 @@ services:
     healthCheckPath: /health
     autoDeployTrigger: commit
     envVars:
+      - key: AUTO_APPLY_MIGRATIONS
+        value: "true"
       - key: APP_ENV
         value: production
       - key: CORS_ORIGINS
-        value: https://your-pages-project.pages.dev
+        value: https://unveni.com,https://www.unveni.com,https://unveni-web.pages.dev
       - key: DATA_PROVIDER
         value: alpha_vantage
       - key: ALPHA_VANTAGE_API_KEY

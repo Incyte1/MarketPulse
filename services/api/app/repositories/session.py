@@ -20,9 +20,13 @@ class SessionRepository:
         handle: str,
         display_name: str,
         entitlement: str,
-        execution_mode: str
+        execution_mode: str,
+        *,
+        auth_provider: str = "local",
+        provider_subject: str | None = None
     ) -> Mapping[str, object]:
         now = utc_now_iso()
+        subject = provider_subject or handle
         self.session.execute(
             """
             INSERT INTO users (
@@ -41,7 +45,7 @@ class SessionRepository:
                 :id,
                 :handle,
                 :display_name,
-                'local',
+                :auth_provider,
                 :provider_subject,
                 :entitlement,
                 :execution_mode,
@@ -60,7 +64,8 @@ class SessionRepository:
                 "id": str(uuid4()),
                 "handle": handle,
                 "display_name": display_name,
-                "provider_subject": handle,
+                "auth_provider": auth_provider,
+                "provider_subject": subject,
                 "entitlement": entitlement,
                 "execution_mode": execution_mode,
                 "created_at": now,
@@ -81,9 +86,12 @@ class SessionRepository:
                 created_at,
                 updated_at
             FROM users
-            WHERE auth_provider = 'local' AND provider_subject = :provider_subject
+            WHERE auth_provider = :auth_provider AND provider_subject = :provider_subject
             """,
-            {"provider_subject": handle}
+            {
+                "auth_provider": auth_provider,
+                "provider_subject": subject
+            }
         )
         if user is None:  # pragma: no cover - guarded by upsert
             raise RuntimeError("user_upsert_failed")
@@ -145,7 +153,8 @@ class SessionRepository:
                 users.display_name,
                 users.entitlement,
                 users.execution_mode,
-                users.auth_provider
+                users.auth_provider,
+                users.provider_subject
             FROM sessions
             JOIN users ON users.id = sessions.user_id
             WHERE sessions.id = :session_id
@@ -169,6 +178,7 @@ class SessionRepository:
                 users.entitlement,
                 users.execution_mode,
                 users.auth_provider,
+                users.provider_subject,
                 users.is_active
             FROM sessions
             JOIN users ON users.id = sessions.user_id

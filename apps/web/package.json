@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:cloudflare": "npm run build && wrangler pages deploy dist --project-name unveni-web"
   },
   "dependencies": {
     "lightweight-charts": "^5.1.0",

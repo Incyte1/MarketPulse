@@ -7,7 +7,7 @@
   "scripts": {
     "dev:web": "npm --workspace apps/web run dev",
     "build:web": "npm --workspace apps/web run build",
-    "preview:web": "npm --workspace apps/web run preview"
+    "preview:web": "npm --workspace apps/web run preview",
+    "deploy:web": "npm --workspace apps/web run deploy:cloudflare"
   }
 }
-

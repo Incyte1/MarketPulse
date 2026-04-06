@@ -25,6 +25,7 @@ class AuthenticatedSessionContext:
     entitlement: str
     execution_mode: Literal["paper", "live"]
     auth_provider: str
+    provider_subject: str
     expires_at: datetime
     mode: Literal["development", "authenticated"]
 
@@ -76,6 +77,7 @@ def _to_context(row: dict[str, object]) -> AuthenticatedSessionContext:
         entitlement=str(row["entitlement"]),
         execution_mode=str(row["execution_mode"]),  # type: ignore[arg-type]
         auth_provider=str(row["auth_provider"]),
+        provider_subject=str(row["provider_subject"]),
         expires_at=_parse_datetime(row["expires_at"]),
         mode=_context_mode()
     )
@@ -103,11 +105,10 @@ def build_session_response(
     )
 
 
-def lookup_authenticated_session(
+def lookup_authenticated_session_by_token(
     session: DatabaseSession,
-    request: Request
+    raw_token: str | None
 ) -> AuthenticatedSessionContext | None:
-    raw_token = request.cookies.get(settings.session_cookie_name)
     if not raw_token:
         return None
 
@@ -127,6 +128,16 @@ def lookup_authenticated_session(
 
     repository.touch_session(str(row["session_id"]))
     return _to_context(dict(row))
+
+
+def lookup_authenticated_session(
+    session: DatabaseSession,
+    request: Request
+) -> AuthenticatedSessionContext | None:
+    return lookup_authenticated_session_by_token(
+        session,
+        request.cookies.get(settings.session_cookie_name)
+    )
 
 
 def create_session(
