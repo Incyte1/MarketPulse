@@ -1,7 +1,0 @@
-- generic [active] [ref=e1]:
-  - generic [ref=e3]:
-    - generic [ref=e4]: Secure Workspace
-    - generic [ref=e5]: Loading access...
-    - generic [ref=e6]: Validating your session before opening the Unveni workspace.
-  - button "Open Next.js Dev Tools" [ref=e12] [cursor=pointer]:
-    - img [ref=e13]
